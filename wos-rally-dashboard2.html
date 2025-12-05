@@ -18,36 +18,20 @@
       justify-content: center;
     }
 
-    /* Overall icy / WS theme */
+    /* Icy Whiteout Survival Theme */
     .app {
       width: 100%;
       max-width: 1200px;
       background:
-        radial-gradient(circle at top left, rgba(148, 163, 184, 0.4), transparent 55%),
-        radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.25), transparent 60%),
+        radial-gradient(circle at top left, rgba(148,163,184,0.4), transparent 55%),
+        radial-gradient(circle at bottom right, rgba(56,189,248,0.25), transparent 60%),
         linear-gradient(to bottom, #020617, #020617 45%, #020617);
       border-radius: 1.5rem;
       padding: 1.75rem 1.5rem 2rem;
-      box-shadow: 0 32px 80px rgba(15, 23, 42, 0.95);
+      box-shadow: 0 32px 80px rgba(15,23,42,0.95);
       border: 1px solid rgba(148,163,184,0.45);
       position: relative;
       overflow: hidden;
-    }
-    .app::before {
-      /* subtle vignetting */
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background:
-        radial-gradient(circle at top, rgba(15,23,42,0.25), transparent 65%),
-        radial-gradient(circle at bottom, rgba(15,23,42,0.7), transparent 65%);
-      mix-blend-mode: soft-light;
-    }
-
-    header {
-      position: relative;
-      z-index: 1;
     }
 
     h1 {
@@ -59,6 +43,7 @@
       letter-spacing: 0.03em;
       text-transform: uppercase;
     }
+
     .badge {
       padding: 0.15rem 0.6rem;
       border-radius: 999px;
@@ -68,33 +53,43 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
+
     .subtitle {
       font-size: 0.9rem;
       color: #9ca3af;
       margin-bottom: 0.8rem;
     }
 
-    /* Optional banner image – replace src with your own WoS screenshot if you want */
-    .hero {
-      margin-bottom: 0.9rem;
-      border-radius: 0.8rem;
-      overflow: hidden;
-      border: 1px solid rgba(148,163,184,0.35);
-      background: radial-gradient(circle at center, rgba(15,23,42,0.9), rgba(15,23,42,0.98));
-      max-height: 180px;
+    /* BIGGER CLOCK PANEL — 2x previous size */
+    .clock-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      padding: 1rem 1.3rem 1.2rem;
+      border-radius: 1.2rem;
+      border: 1px solid rgba(148,197,253,0.55);
+      background: radial-gradient(circle at top, rgba(15,23,42,0.9), rgba(15,23,42,0.82));
+      box-shadow: 0 18px 40px rgba(15,23,42,0.9);
     }
-    .hero img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0.75;
-      filter: saturate(1.1);
-      display: block;
+
+    .clock-label {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #a5b4fc;
+      margin-bottom: 0.4rem;
+    }
+
+    .clock-time {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 3.2rem;  /* <-- doubled in size */
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      color: #e5f2ff;
+      text-shadow: 0 0 18px rgba(148,197,255,0.6);
     }
 
     .meta {
-      position: relative;
-      z-index: 1;
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
@@ -104,6 +99,7 @@
       font-size: 0.8rem;
       color: #9ca3af;
     }
+
     .pill {
       padding: 0.18rem 0.65rem;
       border-radius: 999px;
@@ -115,124 +111,51 @@
       letter-spacing: 0.06em;
     }
 
-    /* Big UTC clock panel */
-    .clock-panel {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      padding: 0.4rem 0.9rem 0.5rem;
-      border-radius: 0.9rem;
-      border: 1px solid rgba(148, 197, 253, 0.55);
-      background: radial-gradient(circle at top, rgba(15,23,42,0.9), rgba(15,23,42,0.82));
-      box-shadow: 0 14px 35px rgba(15,23,42,0.8);
-    }
-    .clock-label {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: #a5b4fc;
-      margin-bottom: 0.15rem;
-    }
-    .clock-time {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 1.7rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      color: #e5f2ff;
-    }
-
-    .controls {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-size: 0.8rem;
-      margin: 0.4rem 0 0.6rem;
-      flex-wrap: wrap;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.35rem 0.9rem;
-      border-radius: 999px;
-      border: 1px solid rgba(96,165,250,0.9);
-      background: radial-gradient(circle at top left, rgba(59,130,246,0.5), rgba(15,23,42,0.98));
-      color: #e5e7eb;
-      font-size: 0.8rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: transform 0.08s ease, box-shadow 0.08s ease;
-    }
-    .btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 12px 30px rgba(37,99,235,0.5);
-    }
-    .btn:active {
-      transform: translateY(0);
-      box-shadow: 0 6px 18px rgba(37,99,235,0.5);
-    }
-    .btn.secondary {
-      border-color: rgba(148,163,184,0.7);
-      background: radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,0.9));
-    }
-    .auto-refresh-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      cursor: pointer;
-    }
-
-    /* PET ALERT TICKER */
+    /* PET ALERT TICKER — highly visible */
     .ticker {
-      position: relative;
-      z-index: 1;
       display: flex;
       align-items: center;
       gap: 0.55rem;
-      margin: 0.3rem 0 0.85rem;
-      padding: 0.45rem 0.9rem;
+      margin: 0.3rem 0 1rem;
+      padding: 0.65rem 1.1rem;
       border-radius: 999px;
       border: 1px solid rgba(96,165,250,0.9);
       background: radial-gradient(circle at left, rgba(15,23,42,0.96), rgba(15,23,42,0.92));
-      box-shadow: 0 12px 32px rgba(15,23,42,0.9);
-      font-size: 0.85rem;
+      font-size: 1rem;
+      font-weight: 500;
+      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: nowrap;
+      box-shadow: 0 14px 34px rgba(15,23,42,0.9);
     }
+
     .ticker-label {
-      font-size: 0.7rem;
+      font-size: 0.9rem;
       text-transform: uppercase;
       letter-spacing: 0.12em;
-      padding: 0.18rem 0.55rem;
+      padding: 0.25rem 0.7rem;
       border-radius: 999px;
       border: 1px solid rgba(148,163,184,0.85);
       background: rgba(15,23,42,0.98);
       color: #bfdbfe;
-      flex-shrink: 0;
-    }
-    #tickerText {
-      display: inline-block;
     }
 
-    /* Ticker severity states */
+    /* Ticker color states */
     .ticker--idle {
-      border-color: rgba(59,130,246,0.65);
-      background: radial-gradient(circle at left, rgba(15,23,42,0.96), rgba(15,23,42,0.9));
+      border-color: rgba(96,165,250,0.9);
     }
     .ticker--warning {
-      border-color: rgba(251,191,36,0.9);
-      background: radial-gradient(circle at left, rgba(30,64,175,0.9), rgba(180,83,9,0.45));
-      box-shadow: 0 0 24px rgba(250,204,21,0.5);
+      border-color: rgba(251,191,36,0.95);
+      background: radial-gradient(circle at left, rgba(30,64,175,0.9), rgba(180,83,9,0.55));
+      box-shadow: 0 0 24px rgba(250,204,21,0.7);
     }
     .ticker--danger {
-      border-color: rgba(248,113,113,0.95);
-      background: radial-gradient(circle at left, rgba(30,64,175,0.9), rgba(185,28,28,0.6));
-      box-shadow: 0 0 26px rgba(248,113,113,0.6);
-      animation: tickerPulse 1s ease-in-out infinite alternate;
+      border-color: rgba(248,113,113,1);
+      background: radial-gradient(circle at left, rgba(30,64,175,0.9), rgba(185,28,28,0.7));
+      box-shadow: 0 0 26px rgba(248,113,113,0.75);
+      animation: tickerPulse 0.9s ease-in-out infinite alternate;
     }
+
     @keyframes tickerPulse {
       from { transform: translateY(0); }
       to   { transform: translateY(-1px); }
@@ -240,81 +163,51 @@
 
     /* Layout: left rallies, right pets */
     .columns {
-      position: relative;
-      z-index: 1;
       display: grid;
       grid-template-columns: minmax(0, 2fr) minmax(0, 1.6fr);
       gap: 1rem;
-      align-items: start;
     }
     @media (max-width: 900px) {
       .columns {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: 1fr;
       }
     }
 
+    /* Cards */
     .card {
       border-radius: 1rem;
       border: 1px solid rgba(148,163,184,0.4);
       background: radial-gradient(circle at top, rgba(15,23,42,0.96), rgba(15,23,42,0.92));
-      padding: 0.9rem 0.9rem 0.8rem;
+      padding: 1rem;
       box-shadow: 0 18px 40px rgba(15,23,42,0.9);
-      backdrop-filter: blur(4px);
-    }
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.4rem;
-      gap: 0.5rem;
-    }
-    .card-title {
-      font-size: 0.95rem;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-    }
-    .card-subtitle {
-      font-size: 0.75rem;
-      color: #9ca3af;
     }
 
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* Tables */
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.85rem;
-      margin-top: 0.3rem;
-      overflow: hidden;
-      border-radius: 0.75rem;
+      margin-top: 0.4rem;
       border: 1px solid rgba(55,65,81,0.9);
+      border-radius: 0.75rem;
+      overflow: hidden;
     }
+
     thead {
       background: rgba(15,23,42,0.98);
     }
+
     th, td {
       padding: 0.45rem 0.5rem;
-      text-align: left;
     }
-    th {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: #9ca3af;
-      border-bottom: 1px solid rgba(55,65,81,0.9);
-    }
-    tbody tr:nth-child(odd) {
-      background: rgba(15,23,42,0.84);
-    }
-    tbody tr:nth-child(even) {
-      background: rgba(15,23,42,0.65);
-    }
-    tbody tr:first-child {
-      outline: 1px solid rgba(52,211,153,0.7);
-      box-shadow: 0 0 0 1px rgba(16,185,129,0.4);
-    }
-    tbody tr:first-child td {
-      border-bottom: 1px solid rgba(34,197,94,0.4);
-    }
+
     .order-badge {
       display: inline-flex;
       align-items: center;
@@ -326,6 +219,7 @@
       border: 1px solid rgba(148,163,184,0.7);
       font-size: 0.8rem;
     }
+
     .first-tag {
       font-size: 0.7rem;
       padding: 0.1rem 0.4rem;
@@ -336,77 +230,47 @@
       margin-left: 0.25rem;
     }
 
+    /* Pet badges with updated thresholds */
     .pet-badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.1rem 0.45rem;
-      border-radius: 999px;
-      font-size: 0.75rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 0.8rem;
+      font-size: 0.8rem;
       border: 1px solid rgba(148,163,184,0.6);
-      background: rgba(15,23,42,0.9);
-      color: #e5e7eb;
       white-space: nowrap;
     }
-    .pet-badge--none {
-      opacity: 0.7;
-      color: #9ca3af;
-    }
-    .pet-badge--upcoming {
-      border-color: rgba(59,130,246,0.8);
-      background: rgba(37,99,235,0.18);
-      color: #bfdbfe;
-    }
+    .pet-badge--none { color: #9ca3af; }
     .pet-badge--active {
-      border-color: rgba(34,197,94,0.8);
       background: rgba(22,163,74,0.22);
       color: #bbf7d0;
+      border-color: rgba(34,197,94,0.8);
     }
-    .pet-badge--soon {
-      border-color: rgba(245,158,11,0.9);
+    .pet-badge--soon { /* <15 min */
       background: rgba(234,179,8,0.18);
+      border-color: rgba(245,158,11,0.9);
       color: #facc15;
     }
-    .pet-badge--critical {
-      border-color: rgba(248,113,113,0.9);
+    .pet-badge--critical { /* <5 min */
       background: rgba(248,113,113,0.18);
+      border-color: rgba(248,113,113,0.9);
       color: #fecaca;
     }
     .pet-badge--off {
-      border-color: rgba(75,85,99,0.9);
       background: rgba(15,23,42,0.9);
+      border-color: rgba(75,85,99,0.9);
       color: #9ca3af;
-    }
-
-    .status {
-      font-size: 0.8rem;
-      color: #9ca3af;
-      margin-top: 0.3rem;
-      min-height: 1.2em;
-    }
-    .status.error { color: #fca5a5; }
-    .small {
-      font-size: 0.75rem;
-      color: #6b7280;
-      margin-top: 0.25rem;
     }
 
     textarea {
       width: 100%;
-      box-sizing: border-box;
       min-height: 110px;
       border-radius: 0.75rem;
+      background: rgba(15,23,42,0.9);
       border: 1px solid rgba(55,65,81,0.9);
-      background: rgba(15,23,42,0.95);
       padding: 0.6rem 0.7rem;
       color: #e5e7eb;
-      font-size: 0.8rem;
       resize: vertical;
-      outline: none;
     }
-    textarea:focus {
-      border-color: rgba(56,189,248,0.9);
-      box-shadow: 0 0 0 1px rgba(56,189,248,0.6);
-    }
+
   </style>
 </head>
 <body>
@@ -417,13 +281,8 @@
         <span class="badge">Rallies & Pets</span>
       </h1>
       <p class="subtitle">
-        Left: rally timing & copy text. Right: full live pet overview for all whales. Keep this open during SvS.
+        Left: rally timing & macros. Right: full live pet overview for all whales.
       </p>
-
-      <!-- Optional banner image (replace src with your own, or remove this block) -->
-      <!-- <div class="hero">
-        <img src="ws-banner.png" alt="Whiteout Survival battle" />
-      </div> -->
     </header>
 
     <section>
@@ -435,150 +294,91 @@
         </div>
       </div>
 
-      <div class="controls">
-        <button id="refreshBtn" class="btn" type="button">🔄 Refresh now</button>
-        <label class="auto-refresh-label">
-          <input type="checkbox" id="autoRefreshToggle" checked />
-          Auto-refresh every&nbsp;
-          <select id="refreshIntervalSelect">
-            <option value="5">5s</option>
-            <option value="10" selected>10s</option>
-            <option value="20">20s</option>
-            <option value="30">30s</option>
-          </select>
-        </label>
-      </div>
-
+      <!-- Ticker -->
       <div class="ticker ticker--idle" id="ticker">
         <span class="ticker-label">Pet Alert</span>
-        <span id="tickerText">Loading pet schedule…</span>
+        <span id="tickerText">Loading…</span>
       </div>
 
       <div class="columns">
         <!-- LEFT: RALLIES -->
         <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Rally Timing</div>
-              <div class="card-subtitle">Based on march times from the Plan sheet.</div>
-            </div>
-          </div>
+          <div class="card-title">Rally Timing</div>
 
           <table>
             <thead>
               <tr>
                 <th>Order</th>
                 <th>Player</th>
-                <th>March Time (s)</th>
-                <th>Offset vs First</th>
+                <th>March (s)</th>
+                <th>Offset</th>
               </tr>
             </thead>
-            <tbody id="rallyTableBody">
-              <tr>
-                <td colspan="4" style="text-align:center; padding:0.9rem 0; color:#6b7280;">
-                  Loading data from Google Sheets...
-                </td>
-              </tr>
-            </tbody>
+            <tbody id="rallyTableBody"></tbody>
           </table>
-
-          <div id="status" class="status"></div>
-          <div class="small" id="dataUpdated">Last sheet fetch: —</div>
 
           <div style="margin-top: 0.9rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem; gap:0.5rem;">
-              <div style="font-size:0.9rem; font-weight:500;">Rally plan text for chat</div>
+              <div style="font-size:0.9rem; font-weight:500;">Alliance Chat Message</div>
               <button id="copyBtn" class="btn secondary" type="button">📋 Copy</button>
             </div>
-            <textarea id="shareText" readonly>Rally plan will appear here once data is loaded.</textarea>
+            <textarea id="shareText" readonly></textarea>
           </div>
         </div>
 
         <!-- RIGHT: PETS -->
         <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Pet Status – All Whales</div>
-              <div class="card-subtitle">Read from the Pets sheet. Color = urgency.</div>
-            </div>
-          </div>
+          <div class="card-title">Pet Status – All Whales</div>
 
           <table>
             <thead>
               <tr>
                 <th>Whale</th>
-                <th>Window (UTC)</th>
+                <th>Window</th>
                 <th>Status</th>
               </tr>
             </thead>
-            <tbody id="petsTableBody">
-              <tr>
-                <td colspan="3" style="text-align:center; padding:0.9rem 0; color:#6b7280;">
-                  Waiting for pet data...
-                </td>
-              </tr>
-            </tbody>
+            <tbody id="petsTableBody"></tbody>
           </table>
-
-          <div class="small">
-            Legend: green = active, yellow = &lt;5m left / starting soon, red = &lt;2m left, grey = expired / no pet.
-          </div>
         </div>
       </div>
     </section>
   </main>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyxyAZJahC4ouheWWMKt0KZ7fFW3PPkeTndnu3HSyuIyFZfIakN294TeC9nANU8Y5j-/exec"; // <-- put your Apps Script Web App URL here
+    const API_URL = "https://script.google.com/macros/s/AKfycbyxyAZJahC4ouheWWMKt0KZ7fFW3PPkeTndnu3HSyuIyFZfIakN294TeC9nANU8Y5j-/exec";
 
     const rallyTableBody = document.getElementById("rallyTableBody");
     const petsTableBody = document.getElementById("petsTableBody");
-    const statusEl = document.getElementById("status");
-    const refreshBtn = document.getElementById("refreshBtn");
-    const autoRefreshToggle = document.getElementById("autoRefreshToggle");
-    const refreshIntervalSelect = document.getElementById("refreshIntervalSelect");
-    const shareTextEl = document.getElementById("shareText");
-    const copyBtn = document.getElementById("copyBtn");
     const tickerEl = document.getElementById("ticker");
     const tickerTextEl = document.getElementById("tickerText");
+    const shareTextEl = document.getElementById("shareText");
     const utcClockEl = document.getElementById("utcClock");
-    const dataUpdatedEl = document.getElementById("dataUpdated");
 
-    let refreshTimer = null;
     let planRows = [];
     let petSchedule = [];
 
-    // --- CLOCK (-1s offset to match in-game UTC) ---
+    /* -----------------------
+       LARGE UTC CLOCK (-1s)
+    ----------------------- */
     function updateClock() {
-      const now = new Date(Date.now() - 1000); // subtract 1 second
-      const iso = now.toISOString();
-      const timePart = iso.substring(11, 19); // HH:MM:SS
-      utcClockEl.textContent = timePart;
+      const now = new Date(Date.now() - 1000);
+      utcClockEl.textContent = now.toISOString().substring(11, 19);
     }
     setInterval(updateClock, 1000);
     updateClock();
 
-    // --- HELPERS ---
-    function formatOffset(offset) {
-      const n = Number(offset) || 0;
-      if (n === 0) return "0s (first caller)";
-      return n + "s after first";
-    }
-    function formatMinsShort(mins) {
-      if (mins <= 0.5) {
-        const sec = Math.max(5, Math.round(mins * 60));
-        return sec + "s";
-      }
-      return Math.round(mins) + "m";
+    /* -----------------------
+       PET STATUS LOGIC
+    ----------------------- */
+    function formatMins(mins) {
+      return mins <= 1 ? Math.round(mins * 60) + "s" : Math.round(mins) + "m";
     }
 
-    function getPetStatus(record) {
-      const start = record.PetStartUTC ? new Date(record.PetStartUTC) : null;
-      const end = record.PetEndUTC ? new Date(record.PetEndUTC) : null;
-
-      if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
-        return { label: "No pet", type: "none" };
-      }
+    function getPetStatus(p) {
+      const start = p.PetStartUTC ? new Date(p.PetStartUTC) : null;
+      const end = p.PetEndUTC ? new Date(p.PetEndUTC) : null;
+      if (!start || !end) return { label: "No pet", type: "none" };
 
       const now = new Date();
       const msToStart = start - now;
@@ -586,342 +386,134 @@
       const minToStart = msToStart / 60000;
       const minToEnd = msToEnd / 60000;
 
-      if (msToEnd <= 0) {
-        return { label: "Expired", type: "off" };
-      }
+      if (msToEnd <= 0) return { label: "Expired", type: "off" };
 
       if (msToStart > 0) {
-        const t = formatMinsShort(minToStart);
-        const type = minToStart <= 5 ? "soon" : "upcoming";
-        return { label: "Starts in " + t, type };
+        return {
+          label: `Starts in ${formatMins(minToStart)}`,
+          type: minToStart <= 5 ? "soon" : "upcoming"
+        };
       }
 
-      // active
-      const t = formatMinsShort(minToEnd);
-      let type = "active";
-      if (minToEnd <= 2) type = "critical";
-      else if (minToEnd <= 5) type = "soon";
-      return { label: "Active (" + t + " left)", type };
+      // Active thresholds UPDATED:
+      if (minToEnd < 5) return { label: `Active (${formatMins(minToEnd)} left)`, type: "critical" };
+      if (minToEnd < 15) return { label: `Active (${formatMins(minToEnd)} left)`, type: "soon" };
+
+      return { label: `Active (${formatMins(minToEnd)} left)`, type: "active" };
     }
 
-    // For rally table, we only need pet status by name (if you ever want to show it again there)
-    function getPetStatusForName(playerName) {
-      if (!petSchedule.length || !playerName) {
-        return { label: "No pet", type: "none" };
-      }
-      const key = String(playerName).trim().toLowerCase();
-      const rec = petSchedule.find(p => {
-        const n =
-          (p.WhaleName || p.PlayerName || p.Name || "")
-            .toString()
-            .trim()
-            .toLowerCase();
-        return n && n === key;
-      });
-      if (!rec) return { label: "No pet", type: "none" };
-      return getPetStatus(rec);
-    }
-
-    // --- FETCH DATA FROM SHEET ---
-    async function fetchData() {
-      statusEl.textContent = "Updating from sheet...";
-      statusEl.classList.remove("error");
-
-      try {
-        const res = await fetch(API_URL + "?t=" + Date.now());
-        if (!res.ok) {
-          throw new Error("HTTP " + res.status);
-        }
-        const data = await res.json();
-
-        planRows = data.plan || data.rows || [];
-        petSchedule = data.pets || [];
-
-        renderRallyTable();
-        renderPetsTable();
-        generateShareText();
-        updateTicker();
-
-        const updated = new Date(data.updated || Date.now());
-        dataUpdatedEl.textContent =
-          "Last sheet fetch: " + updated.toISOString().substring(11, 19) + " UTC";
-
-        statusEl.textContent = "Loaded " + planRows.length + " rally rows, " +
-          petSchedule.length + " pet rows.";
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent = "Error loading data: " + err.message;
-        statusEl.classList.add("error");
-        rallyTableBody.innerHTML = `
-          <tr>
-            <td colspan="4" style="text-align:center; padding:0.9rem 0; color:#fca5a5;">
-              Failed to load data. Check the API URL or your internet connection.
-            </td>
-          </tr>
-        `;
-        petsTableBody.innerHTML = `
-          <tr>
-            <td colspan="3" style="text-align:center; padding:0.9rem 0; color:#fca5a5;">
-              Could not load pet schedule.
-            </td>
-          </tr>
-        `;
-        tickerTextEl.textContent = "Could not load pet schedule.";
-        tickerEl.className = "ticker ticker--danger";
-      }
-    }
-
-    // --- RALLY TABLE (LEFT) ---
-    function renderRallyTable() {
-      rallyTableBody.innerHTML = "";
-
-      const rows = planRows || [];
-      if (!rows.length) {
-        const tr = document.createElement("tr");
-        const td = document.createElement("td");
-        td.colSpan = 4;
-        td.style.textAlign = "center";
-        td.style.padding = "0.9rem 0";
-        td.style.color = "#6b7280";
-        td.textContent = "No data. Check that the Plan sheet has values.";
-        tr.appendChild(td);
-        rallyTableBody.appendChild(tr);
-        return;
-      }
-
-      rows.forEach((row, index) => {
-        const tr = document.createElement("tr");
-
-        const orderTd = document.createElement("td");
-        const badge = document.createElement("span");
-        badge.className = "order-badge";
-        badge.textContent = row.CallOrder || (index + 1);
-        orderTd.appendChild(badge);
-
-        const playerTd = document.createElement("td");
-        const name = row.PlayerName || "-";
-        playerTd.textContent = name;
-        if (index === 0) {
-          const firstTag = document.createElement("span");
-          firstTag.className = "first-tag";
-          firstTag.textContent = "First caller";
-          playerTd.appendChild(firstTag);
-        }
-
-        const timeTd = document.createElement("td");
-        timeTd.textContent = row.MarchTimeSec || "-";
-
-        const offsetTd = document.createElement("td");
-        offsetTd.textContent = formatOffset(row.OffsetVsFirstSec);
-
-        tr.appendChild(orderTd);
-        tr.appendChild(playerTd);
-        tr.appendChild(timeTd);
-        tr.appendChild(offsetTd);
-        rallyTableBody.appendChild(tr);
-      });
-    }
-
-    // --- PET TABLE (RIGHT, ALL WHALES) ---
+    /* -----------------------
+       RENDER PETS (RIGHT)
+    ----------------------- */
     function renderPetsTable() {
       petsTableBody.innerHTML = "";
+      petSchedule.forEach(p => {
+        const name = p.WhaleName || p.PlayerName || "-";
+        const s = p.PetStartUTC ? new Date(p.PetStartUTC).toISOString().substring(11, 16) : "-";
+        const e = p.PetEndUTC ? new Date(p.PetEndUTC).toISOString().substring(11, 16) : "-";
 
-      const rows = petSchedule || [];
-      if (!rows.length) {
-        const tr = document.createElement("tr");
-        const td = document.createElement("td");
-        td.colSpan = 3;
-        td.style.textAlign = "center";
-        td.style.padding = "0.9rem 0";
-        td.style.color = "#6b7280";
-        td.textContent = "No pet rows found. Check the Pets sheet.";
-        tr.appendChild(td);
-        petsTableBody.appendChild(tr);
-        return;
-      }
+        const status = getPetStatus(p);
 
-      rows.forEach(rec => {
-        const tr = document.createElement("tr");
-
-        const name = rec.WhaleName || rec.PlayerName || rec.Name || "-";
-        const nameTd = document.createElement("td");
-        nameTd.textContent = name;
-
-        const windowTd = document.createElement("td");
-        const start = rec.PetStartUTC ? new Date(rec.PetStartUTC) : null;
-        const end = rec.PetEndUTC ? new Date(rec.PetEndUTC) : null;
-        if (start && end && !isNaN(start.getTime()) && !isNaN(end.getTime())) {
-          const s = start.toISOString().substring(11, 16);
-          const e = end.toISOString().substring(11, 16);
-          windowTd.textContent = s + " - " + e;
-        } else {
-          windowTd.textContent = "-";
-        }
-
-        const statusTd = document.createElement("td");
-        const petStatus = getPetStatus(rec);
-        const badge = document.createElement("span");
-        badge.className = "pet-badge pet-badge--" + (petStatus.type || "none");
-        badge.textContent = petStatus.label;
-        statusTd.appendChild(badge);
-
-        tr.appendChild(nameTd);
-        tr.appendChild(windowTd);
-        tr.appendChild(statusTd);
-        petsTableBody.appendChild(tr);
+        petsTableBody.innerHTML += `
+          <tr>
+            <td>${name}</td>
+            <td>${s} - ${e}</td>
+            <td><span class="pet-badge pet-badge--${status.type}">${status.label}</span></td>
+          </tr>
+        `;
       });
     }
 
-    // --- RALLY CHAT TEXT ---
-    function generateShareText() {
-      const rows = planRows || [];
-      if (!rows.length) {
-        shareTextEl.value = "Rally plan will appear here once data is loaded.";
-        return;
+    /* -----------------------
+       RALLY TABLE (LEFT)
+    ----------------------- */
+    function renderRallyTable() {
+      rallyTableBody.innerHTML = "";
+      planRows.forEach((r, i) => {
+        rallyTableBody.innerHTML += `
+          <tr>
+            <td><span class="order-badge">${r.CallOrder}</span></td>
+            <td>${r.PlayerName} ${i === 0 ? '<span class="first-tag">First</span>' : ''}</td>
+            <td>${r.MarchTimeSec}</td>
+            <td>${r.OffsetVsFirstSec}s</td>
+          </tr>
+        `;
+      });
+    }
+
+    /* -----------------------
+       TICKER
+    ----------------------- */
+    function updateTicker() {
+      const now = new Date();
+      let expiring = [];
+      let expired = [];
+      let upcoming = [];
+
+      petSchedule.forEach(p => {
+        const start = new Date(p.PetStartUTC);
+        const end = new Date(p.PetEndUTC);
+        const minStart = (start - now) / 60000;
+        const minEnd   = (end   - now) / 60000;
+
+        const name = p.WhaleName || p.PlayerName;
+
+        if (minEnd <= 0 && minEnd >= -5) expired.push(name);
+        else if (minEnd > 0 && minEnd < 5) expiring.push(name);
+        else if (minStart > 0 && minStart < 5) upcoming.push(name);
+      });
+
+      if (expired.length) {
+        tickerTextEl.textContent = `${expired.join(", ")} pets EXPIRED – update marches!`;
+        tickerEl.className = "ticker ticker--danger";
       }
+      else if (expiring.length) {
+        tickerTextEl.textContent = `${expiring.join(", ")} pets <5m left`;
+        tickerEl.className = "ticker ticker--danger";
+      }
+      else if (upcoming.length) {
+        tickerTextEl.textContent = `${upcoming.join(", ")} pets activate soon`;
+        tickerEl.className = "ticker ticker--warning";
+      }
+      else {
+        tickerTextEl.textContent = "No pet changes in the next 15 minutes.";
+        tickerEl.className = "ticker ticker--idle";
+      }
+    }
 
-      const lines = [];
-      lines.push("Whale Rally Timing");
+    /* -----------------------
+       COPY TEXT MACRO (UPDATED HEADER)
+    ----------------------- */
+    function generateShareText() {
+      let lines = ["ATTENTION - WHALE RALLY TIMINGS", ""];
 
-      rows.forEach((row, index) => {
-        const name = row.PlayerName || "-";
-        const offsetNum = Number(row.OffsetVsFirstSec) || 0;
-
-        if (index === 0 || offsetNum === 0) {
-          lines.push(`${name} – call first`);
-        } else {
-          lines.push(`${name} – call after ${offsetNum}s`);
-        }
+      planRows.forEach((r, i) => {
+        if (i === 0) lines.push(`${r.PlayerName} – call first`);
+        else lines.push(`${r.PlayerName} – call after ${r.OffsetVsFirstSec}s`);
       });
 
       shareTextEl.value = lines.join("\n");
     }
 
-    // --- PET TICKER (TOP) ---
-    function updateTicker() {
-      if (!petSchedule.length) {
-        tickerTextEl.textContent = "No pet schedule data. Check the Pets tab in the sheet.";
-        tickerEl.className = "ticker ticker--idle";
-        return;
-      }
+    /* -----------------------
+       LOAD DATA
+    ----------------------- */
+    async function fetchData() {
+      const res = await fetch(API_URL + "?t=" + Date.now());
+      const data = await res.json();
+      planRows = data.plan || data.rows || [];
+      petSchedule = data.pets || [];
 
-      const now = new Date();
-      const upcoming = [];
-      const expiring = [];
-      const expired = [];
-
-      petSchedule.forEach(p => {
-        const name = p.WhaleName || p.PlayerName || p.Name || "-";
-        const start = p.PetStartUTC ? new Date(p.PetStartUTC) : null;
-        const end = p.PetEndUTC ? new Date(p.PetEndUTC) : null;
-
-        if (!name || !start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
-          return;
-        }
-
-        const msToStart = start - now;
-        const msToEnd = end - now;
-        const minToStart = msToStart / 60000;
-        const minToEnd = msToEnd / 60000;
-
-        if (minToStart > 0 && minToStart <= 5) {
-          upcoming.push({ name, mins: minToStart });
-        } else if (msToStart <= 0 && msToEnd > 0 && minToEnd <= 5) {
-          expiring.push({ name, mins: minToEnd });
-        } else if (msToEnd <= 0 && msToEnd >= -5 * 60000) {
-          expired.push({ name, mins: -minToEnd });
-        }
-      });
-
-      const msgs = [];
-      const fmt = (x) => formatMinsShort(x);
-      let mode = "idle";
-
-      if (expiring.length) {
-        expiring.slice(0, 3).forEach(e =>
-          msgs.push(`${e.name} pets expire in ${fmt(e.mins)}`)
-        );
-        mode = "warning";
-      }
-      if (expired.length) {
-        expired.slice(0, 3).forEach(e =>
-          msgs.push(`${e.name} pets expired – update march times!`)
-        );
-        mode = "danger";
-      } else if (!expiring.length && upcoming.length) {
-        upcoming.slice(0, 3).forEach(u =>
-          msgs.push(`${u.name} pets activate in ${fmt(u.mins)}`)
-        );
-        mode = "warning";
-      }
-
-      if (!msgs.length) {
-        tickerTextEl.textContent = "No pet changes in the next 5 minutes.";
-        tickerEl.className = "ticker ticker--idle";
-      } else {
-        tickerTextEl.textContent = msgs.join(" • ");
-        tickerEl.className = "ticker ticker--" + mode;
-      }
+      renderRallyTable();
+      renderPetsTable();
+      updateTicker();
+      generateShareText();
     }
 
-    // --- COPY BUTTON ---
-    async function copyShareText() {
-      const text = shareTextEl.value || "";
-      if (!text.trim()) return;
-
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          await navigator.clipboard.writeText(text);
-        } else {
-          shareTextEl.select();
-          document.execCommand("copy");
-        }
-        statusEl.textContent = "Rally plan copied to clipboard.";
-        statusEl.classList.remove("error");
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent = "Could not copy text. Please select and copy manually.";
-        statusEl.classList.add("error");
-      }
-    }
-
-    // --- WIRES & INTERVALS ---
-    refreshBtn.addEventListener("click", fetchData);
-    autoRefreshToggle.addEventListener("change", () => {
-      if (autoRefreshToggle.checked) {
-        startAutoRefresh();
-      } else {
-        stopAutoRefresh();
-      }
-    });
-    refreshIntervalSelect.addEventListener("change", () => {
-      if (autoRefreshToggle.checked) startAutoRefresh();
-    });
-    copyBtn.addEventListener("click", copyShareText);
-
-    function startAutoRefresh() {
-      stopAutoRefresh();
-      const seconds = Number(refreshIntervalSelect.value) || 10;
-      refreshTimer = setInterval(fetchData, seconds * 1000);
-    }
-    function stopAutoRefresh() {
-      if (refreshTimer) {
-        clearInterval(refreshTimer);
-        refreshTimer = null;
-      }
-    }
-
-    // Refresh pet statuses & ticker between sheet fetches
-    setInterval(() => {
-      if (petSchedule.length) {
-        renderPetsTable();
-        updateTicker();
-      }
-    }, 10000);
-
-    // Initial load
+    /* Auto-refresh + initial startup */
+    setInterval(fetchData, 10000);
     fetchData();
-    startAutoRefresh();
+
   </script>
 </body>
 </html>
