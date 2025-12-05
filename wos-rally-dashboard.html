@@ -393,7 +393,7 @@
       }
 
       const lines = [];
-      lines.push("Rally sync plan (all rallies land together):");
+      lines.push("Whale Rally Timings:");
 
       rows.forEach((row, index) => {
         const order = row.CallOrder || (index + 1);
@@ -403,7 +403,7 @@
         if (index === 0 || offsetNum === 0) {
           lines.push(`${order}) ${name} – CALL FIRST (offset 0s)`);
         } else {
-          lines.push(`${order}) ${name} – press ${offsetNum}s after first`);
+          lines.push(`${order}) ${name} – call ${offsetNum}s after first`);
         }
       });
 
@@ -463,3 +463,4 @@
   </script>
 </body>
 </html>
+
