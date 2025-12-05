@@ -95,6 +95,10 @@
       transform: translateY(0);
       box-shadow: 0 4px 14px rgba(37,99,235,0.35);
     }
+    .btn.secondary {
+      border-color: rgba(148,163,184,0.7);
+      background: rgba(15,23,42,0.9);
+    }
     .auto-refresh-label {
       display: inline-flex;
       align-items: center;
@@ -169,6 +173,46 @@
       color: #6b7280;
       margin-top: 0.4rem;
     }
+    .share-block {
+      margin-top: 1.2rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(75,85,99,0.9);
+      background: radial-gradient(circle at top right, rgba(30,64,175,0.4), rgba(15,23,42,0.96));
+      padding: 0.9rem 0.9rem 0.8rem;
+    }
+    .share-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      gap: 0.5rem;
+    }
+    .share-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      min-height: 110px;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(55,65,81,0.9);
+      background: rgba(15,23,42,0.95);
+      padding: 0.6rem 0.7rem;
+      color: #e5e7eb;
+      font-size: 0.8rem;
+      resize: vertical;
+      outline: none;
+    }
+    textarea:focus {
+      border-color: rgba(56,189,248,0.9);
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.6);
+    }
+    .copy-note {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 0.35rem;
+    }
   </style>
 </head>
 <body>
@@ -227,6 +271,18 @@
       <div class="small">
         Tip: keep this dashboard open during SvS; let only one or two strategists edit the sheet to avoid chaos.
       </div>
+
+      <!-- COPY-PASTE RALLY PLAN BLOCK -->
+      <div class="share-block">
+        <div class="share-header">
+          <div class="share-title">Rally plan text for chat</div>
+          <button id="copyBtn" class="btn secondary" type="button">📋 Copy to clipboard</button>
+        </div>
+        <textarea id="shareText" readonly>Rally plan will appear here once data is loaded.</textarea>
+        <div class="copy-note">
+          Copy this into AC / state chat so everyone knows the rally order and timing.
+        </div>
+      </div>
     </section>
   </main>
 
@@ -239,12 +295,15 @@
     const refreshBtn = document.getElementById("refreshBtn");
     const autoRefreshToggle = document.getElementById("autoRefreshToggle");
     const refreshIntervalSelect = document.getElementById("refreshIntervalSelect");
+    const shareTextEl = document.getElementById("shareText");
+    const copyBtn = document.getElementById("copyBtn");
 
     let refreshTimer = null;
 
     function formatOffset(offset) {
-      if (offset === 0) return "0s (first caller)";
-      return offset + "s after first";
+      const n = Number(offset) || 0;
+      if (n === 0) return "0s (first caller)";
+      return n + "s after first";
     }
 
     async function fetchData() {
@@ -260,6 +319,7 @@
         const rows = data.rows || [];
 
         renderTable(rows);
+        generateShareText(rows);
 
         const updated = new Date(data.updated || Date.now());
         lastUpdatedEl.textContent = "Last update: " + updated.toLocaleTimeString();
@@ -268,6 +328,13 @@
         console.error(err);
         statusEl.textContent = "Error loading data: " + err.message;
         statusEl.classList.add("error");
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="4" style="text-align:center; padding:0.9rem 0; color:#fca5a5;">
+              Failed to load data. Check the API URL or your internet connection.
+            </td>
+          </tr>
+        `;
       }
     }
 
@@ -309,9 +376,7 @@
         timeTd.textContent = row.MarchTimeSec || "-";
 
         const offsetTd = document.createElement("td");
-        offsetTd.textContent = typeof row.OffsetVsFirstSec === "number"
-          ? formatOffset(row.OffsetVsFirstSec)
-          : formatOffset(Number(row.OffsetVsFirstSec) || 0);
+        offsetTd.textContent = formatOffset(row.OffsetVsFirstSec);
 
         tr.appendChild(orderTd);
         tr.appendChild(playerTd);
@@ -319,6 +384,30 @@
         tr.appendChild(offsetTd);
         tableBody.appendChild(tr);
       });
+    }
+
+    function generateShareText(rows) {
+      if (!rows.length) {
+        shareTextEl.value = "Rally plan will appear here once data is loaded.";
+        return;
+      }
+
+      const lines = [];
+      lines.push("Rally sync plan (all rallies land together):");
+
+      rows.forEach((row, index) => {
+        const order = row.CallOrder || (index + 1);
+        const name = row.PlayerName || "-";
+        const offsetNum = Number(row.OffsetVsFirstSec) || 0;
+
+        if (index === 0 || offsetNum === 0) {
+          lines.push(`${order}) ${name} – CALL FIRST (offset 0s)`);
+        } else {
+          lines.push(`${order}) ${name} – press ${offsetNum}s after first`);
+        }
+      });
+
+      shareTextEl.value = lines.join("\n");
     }
 
     function startAutoRefresh() {
@@ -334,6 +423,27 @@
       }
     }
 
+    async function copyShareText() {
+      const text = shareTextEl.value || "";
+      if (!text.trim()) return;
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          // Fallback for older browsers
+          shareTextEl.select();
+          document.execCommand("copy");
+        }
+        statusEl.textContent = "Rally plan copied to clipboard.";
+        statusEl.classList.remove("error");
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "Could not copy text. Please select and copy manually.";
+        statusEl.classList.add("error");
+      }
+    }
+
     refreshBtn.addEventListener("click", fetchData);
     autoRefreshToggle.addEventListener("change", () => {
       if (autoRefreshToggle.checked) {
@@ -345,6 +455,7 @@
     refreshIntervalSelect.addEventListener("change", () => {
       if (autoRefreshToggle.checked) startAutoRefresh();
     });
+    copyBtn.addEventListener("click", copyShareText);
 
     // Initial load
     fetchData();
