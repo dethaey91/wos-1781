@@ -418,7 +418,7 @@ textarea {
       <div class="card">
         <div class="card-title" id="ourPetsTitle">Our Pets – All Whales</div>
         <div class="card-subtitle" id="ourPetsSubtitle">
-          From Pets tab (start & end).
+          From Pets tab. Start time only, dashboard assumes 2h duration.
         </div>
 
         <table class="pets-table">
@@ -476,7 +476,7 @@ const I18N = {
     rallyCardTitle: "Rally Timing",
     rallyCardSubtitle: "Based on march times from Plan sheet.",
     ourPetsTitle: "Our Pets – All Whales",
-    ourPetsSubtitle: "From Pets tab (start & end).",
+    ourPetsSubtitle: "From Pets tab. Start time only, dashboard assumes 2h duration.",
     enemyPetsTitle: "Enemy Pets – Opponent Whales",
     enemyPetsSubtitle: "From EnemyPets tab. Start time only, dashboard assumes 2h duration.",
     chatTitle: "Alliance Chat Message",
@@ -511,7 +511,7 @@ const I18N = {
     rallyCardTitle: "Tempo de Rally",
     rallyCardSubtitle: "Com base nos tempos de marcha da aba Plan.",
     ourPetsTitle: "Nossos Pets – Todas as Baleias",
-    ourPetsSubtitle: "Da aba Pets (início e fim).",
+    ourPetsSubtitle: "Da aba Pets. Só horário de início, duração de 2h.",
     enemyPetsTitle: "Pets do Inimigo – Baleias Adversárias",
     enemyPetsSubtitle: "Da aba EnemyPets. Só horário de início, duração de 2h.",
     chatTitle: "Mensagem para o Chat da Aliança",
@@ -556,17 +556,43 @@ function minutesText(min) {
   return min <= 1 ? Math.round(min*60) + "s" : Math.round(min) + "m";
 }
 
+/* Build 2h window from Pets tab (our whales) */
+function buildOwnWindow(p) {
+  if (!serverRefDate || !p.PetStartUTC) return null;
+  const raw = new Date(p.PetStartUTC);
+  if (isNaN(raw)) return null;
+
+  const h = raw.getUTCHours();
+  const m = raw.getUTCMinutes();
+  const start = new Date(serverRefDate);
+  start.setUTCHours(h, m, 0, 0);
+  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+  return { start, end };
+}
+
+/* Build 2h window from EnemyPets tab (enemy whales) */
+function buildEnemyWindow(p) {
+  if (!serverRefDate || !p.PetStartUTC) return null;
+  const raw = new Date(p.PetStartUTC);
+  if (isNaN(raw)) return null;
+
+  const h = raw.getUTCHours();
+  const m = raw.getUTCMinutes();
+  const start = new Date(serverRefDate);
+  start.setUTCHours(h, m, 0, 0);
+  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+  return { start, end };
+}
+
 /* ========= PET STATUS (OUR) ========= */
 function petStatus(p) {
   const t = I18N[currentLang];
-  const now = new Date(Date.now() + serverOffsetMs);
-  const s = new Date(p.PetStartUTC);
-  const e = new Date(p.PetEndUTC);
-  if (!s || !e || isNaN(s) || isNaN(e))
-    return {label: t.statusNoPet, type:"none"};
+  const window = buildOwnWindow(p);
+  if (!window) return {label: t.statusNoPet, type:"none"};
 
-  const mStart = (s - now)/60000;
-  const mEnd   = (e - now)/60000;
+  const now = new Date(Date.now() + serverOffsetMs);
+  const mStart = (window.start - now)/60000;
+  const mEnd   = (window.end   - now)/60000;
 
   if (mEnd <= 0) return {label: t.statusExpired, type:"expired"};
 
@@ -583,20 +609,7 @@ function petStatus(p) {
   return { label: t.statusActiveLeft(minutesText(mEnd)), type:"active" };
 }
 
-/* ========= ENEMY WINDOWS ========= */
-function buildEnemyWindow(p) {
-  if (!serverRefDate || !p.PetStartUTC) return null;
-  const raw = new Date(p.PetStartUTC);
-  if (isNaN(raw)) return null;
-
-  const h = raw.getUTCHours();
-  const m = raw.getUTCMinutes();
-  const start = new Date(serverRefDate);
-  start.setUTCHours(h, m, 0, 0);
-  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
-  return { start, end };
-}
-
+/* ========= PET STATUS (ENEMY) ========= */
 function enemyPetStatus(p) {
   const t = I18N[currentLang];
   const window = buildEnemyWindow(p);
@@ -628,14 +641,19 @@ function renderPets() {
 
   petSchedule.forEach(p => {
     const name = p.WhaleName || p.PlayerName || "-";
-    const s = p.PetStartUTC ? new Date(p.PetStartUTC).toISOString().substring(11,16) : "-";
-    const e = p.PetEndUTC ? new Date(p.PetEndUTC).toISOString().substring(11,16) : "-";
+    const win  = buildOwnWindow(p);
+    let winText = "-";
+    if (win) {
+      const s = win.start.toISOString().substring(11,16);
+      const e = win.end.toISOString().substring(11,16);
+      winText = `${s} - ${e}`;
+    }
     const st = petStatus(p);
 
     tbody.innerHTML += `
       <tr>
         <td>${name}</td>
-        <td>${s} - ${e}</td>
+        <td>${winText}</td>
         <td><span class="pet-badge pet-badge--${st.type}">${st.label}</span></td>
       </tr>`;
   });
@@ -680,7 +698,7 @@ function renderRallies() {
   });
 }
 
-/* ========= TICKER ========= */
+/* ========= TICKER (OUR PETS) ========= */
 function updateTicker() {
   const t = I18N[currentLang];
   const now = new Date(Date.now() + serverOffsetMs);
@@ -690,12 +708,11 @@ function updateTicker() {
   let expired=[], expiring=[], upcoming=[];
 
   petSchedule.forEach(p => {
-    const s = new Date(p.PetStartUTC);
-    const e = new Date(p.PetEndUTC);
-    if (!s || !e || isNaN(s) || isNaN(e)) return;
+    const win = buildOwnWindow(p);
+    if (!win) return;
 
-    const mStart=(s-now)/60000;
-    const mEnd=(e-now)/60000;
+    const mStart = (win.start-now)/60000;
+    const mEnd   = (win.end-now)/60000;
     const name = p.WhaleName || p.PlayerName;
 
     if (mEnd<=0 && mEnd>-5) expired.push(name);
