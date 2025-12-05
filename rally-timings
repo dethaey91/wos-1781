@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>WoS Rally Sync Planner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #070b14;
+      color: #e5e7eb;
+      color-scheme: dark;
+    }
+
+    body {
+      margin: 0;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 960px;
+      background: radial-gradient(circle at top left, #1f2933, #020617);
+      border-radius: 1.5rem;
+      padding: 1.75rem 1.5rem 2rem;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      margin: 0 0 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.1rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      margin-bottom: 1rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1.3fr;
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 800px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: radial-gradient(circle at top, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.85));
+      border-radius: 1rem;
+      padding: 1rem 1rem 1.1rem;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      margin: 0 0 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .hint {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-bottom: 0.75rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    thead {
+      background: rgba(15, 23, 42, 0.95);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    th,
+    td {
+      padding: 0.4rem 0.35rem;
+      text-align: left;
+    }
+
+    th {
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #9ca3af;
+      border-bottom: 1px solid rgba(55, 65, 81, 0.9);
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(15, 23, 42, 0.85);
+    }
+
+    tbody tr:nth-child(odd) {
+      background: rgba(15, 23, 42, 0.55);
+    }
+
+    tbody tr.highlight {
+      outline: 1px solid rgba(52, 211, 153, 0.6);
+      box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.4);
+    }
+
+    input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 0.5rem;
+      border: 1px solid rgba(75, 85, 99, 0.9);
+      padding: 0.3rem 0.45rem;
+      color: #e5e7eb;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: rgba(56, 189, 248, 0.9);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.6);
+      background: rgba(15, 23, 42, 0.98);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid rgba(96, 165, 250, 0.9);
+      background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.35), rgba(15, 23, 42, 0.95));
+      color: #e5e7eb;
+      font-weight: 500;
+      font-size: 0.85rem;
+      cursor: pointer;
+      margin-top: 0.25rem;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.12s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 25px rgba(37, 99, 235, 0.35);
+      background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.5), rgba(15, 23, 42, 1));
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    }
+
+    .btn.secondary {
+      border-color: rgba(148, 163, 184, 0.7);
+      background: rgba(15, 23, 42, 0.9);
+      margin-left: 0.25rem;
+    }
+
+    .btn.secondary:hover {
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.8);
+    }
+
+    .results-table-wrapper {
+      max-height: 270px;
+      overflow: auto;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+    }
+
+    .status {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-top: 0.35rem;
+      min-height: 1.2em;
+    }
+
+    .status.error {
+      color: #fca5a5;
+    }
+
+    .pill {
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      border: 1px solid rgba(52, 211, 153, 0.7);
+      color: #bbf7d0;
+      background: rgba(22, 163, 74, 0.23);
+    }
+
+    .textarea-wrapper {
+      margin-top: 0.7rem;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 110px;
+      box-sizing: border-box;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 0.75rem;
+      border: 1px solid rgba(75, 85, 99, 0.9);
+      padding: 0.55rem 0.65rem;
+      color: #e5e7eb;
+      font-size: 0.8rem;
+      resize: vertical;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: rgba(56, 189, 248, 0.9);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.6);
+    }
+
+    .copy-note {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 0.25rem;
+    }
+
+    .label-soft {
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>
+        WoS Rally Sync Planner
+        <span class="badge">SvS / Castle Battle</span>
+      </h1>
+      <p class="subtitle">
+        Enter each whale's march time to the target and generate a perfectly synced rally call order
+        (all rallies arriving at the same time).
+      </p>
+    </header>
+
+    <section class="grid">
+      <!-- INPUT SIDE -->
+      <div class="card">
+        <h2>
+          1. March Times
+          <span class="label-soft">Slowest march = first rally call</span>
+        </h2>
+        <p class="hint">
+          Time formats: <strong>seconds</strong> (e.g. <code>45</code>) or <strong>MM:SS</strong> (e.g.
+          <code>1:15</code>, <code>02:30</code>). Leave unused rows empty.
+        </p>
+
+        <div class="results-table-wrapper" style="max-height: 320px;">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Player / Whale</th>
+                <th>March Time</th>
+              </tr>
+            </thead>
+            <tbody id="playersBody">
+              <!-- Rows will be injected by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <button id="generateBtn" class="btn" type="button">
+          ⚔️ Generate Call Order
+        </button>
+        <button id="clearBtn" class="btn secondary" type="button">
+          ✖ Clear Times
+        </button>
+        <div id="status" class="status"></div>
+      </div>
+
+      <!-- OUTPUT SIDE -->
+      <div class="card">
+        <h2>
+          2. Rally Call Plan
+          <span class="pill">All hits land together</span>
+        </h2>
+        <p class="hint">
+          Offsets are relative to the <strong>first caller</strong> (the one with the slowest march time).
+        </p>
+
+        <div class="results-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Player</th>
+                <th>March Time</th>
+                <th>Offset vs First</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody">
+              <tr>
+                <td colspan="4" style="text-align:center; padding: 0.9rem 0; color:#6b7280;">
+                  No data yet. Enter march times and click "Generate Call Order".
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="textarea-wrapper">
+          <label class="label-soft" for="shareText">Quick copy for alliance chat:</label>
+          <textarea id="shareText" readonly>Order will appear here after you generate the plan.</textarea>
+          <div class="copy-note">
+            Tip: Use this as your "Rally order" macro in SvS — just paste directly into AC / state chat.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const NUM_ROWS = 10;
+
+    function createRows() {
+      const tbody = document.getElementById("playersBody");
+      tbody.innerHTML = "";
+
+      for (let i = 1; i <= NUM_ROWS; i++) {
+        const tr = document.createElement("tr");
+        tr.className = "player-row";
+        tr.dataset.defaultName = "Whale " + i;
+
+        const idxTd = document.createElement("td");
+        idxTd.textContent = i;
+
+        const nameTd = document.createElement("td");
+        const nameInput = document.createElement("input");
+        nameInput.type = "text";
+        nameInput.className = "player-name";
+        nameInput.placeholder = "Whale " + i;
+        nameTd.appendChild(nameInput);
+
+        const timeTd = document.createElement("td");
+        const timeInput = document.createElement("input");
+        timeInput.type = "text";
+        timeInput.className = "march-time";
+        timeInput.placeholder = "e.g. 45 or 1:15";
+        timeTd.appendChild(timeInput);
+
+        tr.appendChild(idxTd);
+        tr.appendChild(nameTd);
+        tr.appendChild(timeTd);
+        tbody.appendChild(tr);
+      }
+    }
+
+    function parseTimeToSeconds(str) {
+      if (!str) return NaN;
+      const s = String(str).trim();
+      if (!s) return NaN;
+
+      if (s.includes(":")) {
+        const parts = s.split(":");
+        if (parts.length !== 2) return NaN;
+        const minutes = Number(parts[0]);
+        const seconds = Number(parts[1]);
+        if (Number.isNaN(minutes) || Number.isNaN(seconds) || seconds < 0 || seconds >= 60) return NaN;
+        return minutes * 60 + seconds;
+      } else {
+        const secs = Number(s);
+        if (Number.isNaN(secs) || secs <= 0) return NaN;
+        return secs;
+      }
+    }
+
+    function formatSeconds(sec) {
+      if (!Number.isFinite(sec) || sec < 0) return "-";
+      const total = Math.round(sec);
+      const minutes = Math.floor(total / 60);
+      const seconds = total % 60;
+      if (minutes === 0) {
+        return `${total}s`;
+      }
+      const mm = String(minutes);
+      const ss = seconds.toString().padStart(2, "0");
+      return `${mm}:${ss} (${total}s)`;
+    }
+
+    function formatOffset(offset) {
+      const total = Math.round(offset);
+      if (total === 0) return "0s (first caller)";
+      return `${total}s after first`;
+    }
+
+    function generatePlan() {
+      const statusEl = document.getElementById("status");
+      statusEl.textContent = "";
+      statusEl.classList.remove("error");
+
+      const rows = document.querySelectorAll(".player-row");
+      const players = [];
+
+      rows.forEach((row, index) => {
+        const nameInput = row.querySelector(".player-name");
+        const timeInput = row.querySelector(".march-time");
+
+        const rawName = nameInput.value.trim();
+        const name = rawName || row.dataset.defaultName || `Player ${index + 1}`;
+
+        const timeStr = timeInput.value.trim();
+        if (!timeStr) return; // skip empty rows
+
+        const seconds = parseTimeToSeconds(timeStr);
+        if (!Number.isFinite(seconds) || seconds <= 0) {
+          statusEl.textContent = `Row ${index + 1} has an invalid time. Use "seconds" (e.g. 45) or "MM:SS" (e.g. 1:15).`;
+          statusEl.classList.add("error");
+          return;
+        }
+
+        players.push({
+          index: index + 1,
+          name,
+          seconds,
+        });
+      });
+
+      if (statusEl.classList.contains("error")) {
+        // invalid input already reported
+        return;
+      }
+
+      if (players.length === 0) {
+        statusEl.textContent = "Please enter at least one march time.";
+        statusEl.classList.add("error");
+        renderEmptyResults();
+        return;
+      }
+
+      if (players.length === 1) {
+        statusEl.textContent = "Only one march time entered. That player will be the only rally caller.";
+      } else {
+        statusEl.textContent = `Loaded ${players.length} march times. Slowest march will call first.`;
+      }
+
+      const maxTime = Math.max(...players.map((p) => p.seconds));
+      players.forEach((p) => {
+        p.offset = maxTime - p.seconds; // 0 for slowest march
+      });
+
+      players.sort((a, b) => {
+        if (a.offset !== b.offset) return a.offset - b.offset;
+        return a.seconds - b.seconds;
+      });
+
+      renderResults(players);
+      generateShareText(players);
+    }
+
+    function renderEmptyResults() {
+      const tbody = document.getElementById("resultsBody");
+      tbody.innerHTML = "";
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 4;
+      td.style.textAlign = "center";
+      td.style.padding = "0.9rem 0";
+      td.style.color = "#6b7280";
+      td.textContent = 'No data yet. Enter march times and click "Generate Call Order".';
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+
+      const shareText = document.getElementById("shareText");
+      shareText.value = "Order will appear here after you generate the plan.";
+    }
+
+    function renderResults(players) {
+      const tbody = document.getElementById("resultsBody");
+      tbody.innerHTML = "";
+
+      players.forEach((p, idx) => {
+        const tr = document.createElement("tr");
+        if (idx === 0) {
+          tr.classList.add("highlight");
+        }
+
+        const orderTd = document.createElement("td");
+        orderTd.textContent = idx + 1;
+
+        const nameTd = document.createElement("td");
+        nameTd.textContent = p.name;
+
+        const timeTd = document.createElement("td");
+        timeTd.textContent = formatSeconds(p.seconds);
+
+        const offsetTd = document.createElement("td");
+        offsetTd.textContent = formatOffset(p.offset);
+
+        tr.appendChild(orderTd);
+        tr.appendChild(nameTd);
+        tr.appendChild(timeTd);
+        tr.appendChild(offsetTd);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function generateShareText(players) {
+      const lines = [];
+      lines.push("Rally sync plan (all rallies land together):");
+
+      players.forEach((p, idx) => {
+        const order = idx + 1;
+        const base = `${order}) ${p.name}`;
+        if (idx === 0) {
+          lines.push(`${base} – CALL FIRST (slowest march, offset 0s)`);
+        } else {
+          const offsetSec = Math.round(p.offset);
+          lines.push(`${base} – press ${offsetSec}s after first`);
+        }
+      });
+
+      const shareText = document.getElementById("shareText");
+      shareText.value = lines.join("\n");
+    }
+
+    function clearTimes() {
+      const rows = document.querySelectorAll(".player-row");
+      rows.forEach((row) => {
+        const nameInput = row.querySelector(".player-name");
+        const timeInput = row.querySelector(".march-time");
+        timeInput.value = "";
+        // keep names – often you’ll reuse your whales
+      });
+      renderEmptyResults();
+      const statusEl = document.getElementById("status");
+      statusEl.textContent = "March times cleared. You can enter new values.";
+      statusEl.classList.remove("error");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      createRows();
+      renderEmptyResults();
+
+      document.getElementById("generateBtn").addEventListener("click", generatePlan);
+      document.getElementById("clearBtn").addEventListener("click", clearTimes);
+    });
+  </script>
+</body>
+</html>
