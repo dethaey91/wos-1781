@@ -373,11 +373,12 @@
     let lastPlanRows = [];
 
     function updateClock() {
-      const now = new Date();
-      const iso = now.toISOString();
-      const timePart = iso.substring(11, 19); // HH:MM:SS
-      utcClockEl.textContent = "UTC: " + timePart;
-    }
+  // Subtract 1 second to sync with in-game UTC clock
+  const now = new Date(Date.now() - 1000);
+  const iso = now.toISOString();
+  const timePart = iso.substring(11, 19); // HH:MM:SS
+  utcClockEl.textContent = "UTC: " + timePart;
+}
     setInterval(updateClock, 1000);
     updateClock();
 
@@ -687,3 +688,4 @@
   </script>
 </body>
 </html>
+
