@@ -1,519 +1,535 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>WoS Battle Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #020617;
-      color: #e5e7eb;
-      color-scheme: dark;
-    }
-    body {
-      margin: 0;
-      padding: 1.5rem;
-      display: flex;
-      justify-content: center;
-    }
+<meta charset="UTF-8" />
+<title>Whiteout Survival – Battle Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    /* Icy Whiteout Survival Theme */
-    .app {
-      width: 100%;
-      max-width: 1200px;
-      background:
-        radial-gradient(circle at top left, rgba(148,163,184,0.4), transparent 55%),
-        radial-gradient(circle at bottom right, rgba(56,189,248,0.25), transparent 60%),
-        linear-gradient(to bottom, #020617, #020617 45%, #020617);
-      border-radius: 1.5rem;
-      padding: 1.75rem 1.5rem 2rem;
-      box-shadow: 0 32px 80px rgba(15,23,42,0.95);
-      border: 1px solid rgba(148,163,184,0.45);
-      position: relative;
-      overflow: hidden;
-    }
+<style>
+:root {
+  --bg: #020617;
+  --panel: rgba(15,23,42,0.92);
+  --border: rgba(148,163,184,0.45);
+  --text: #e5e7eb;
+  --sub: #9ca3af;
+  --accent-blue: rgba(96,165,250,0.9);
+  --accent-yellow: rgba(245,158,11,0.9);
+  --accent-red: rgba(248,113,113,0.9);
+  --accent-green: rgba(34,197,94,0.9);
+}
 
-    h1 {
-      margin: 0 0 0.25rem;
-      font-size: 1.7rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-    }
+body {
+  margin: 0;
+  padding: 1.5rem;
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+}
 
-    .badge {
-      padding: 0.15rem 0.6rem;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      background: rgba(59,130,246,0.18);
-      border: 1px solid rgba(96,165,250,0.9);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
+.app {
+  width: 100%;
+  max-width: 1250px;
+  background:
+    radial-gradient(circle at top left, rgba(148,163,184,0.4), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(56,189,248,0.25), transparent 60%),
+    linear-gradient(to bottom, #020617, #020617 45%, #020617);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  border: 1px solid var(--border);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.65);
+}
 
-    .subtitle {
-      font-size: 0.9rem;
-      color: #9ca3af;
-      margin-bottom: 0.8rem;
-    }
+h1 {
+  font-size: 1.9rem;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.3rem;
+}
 
-    /* BIGGER CLOCK PANEL — 2x previous size */
-    .clock-panel {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      padding: 1rem 1.3rem 1.2rem;
-      border-radius: 1.2rem;
-      border: 1px solid rgba(148,197,253,0.55);
-      background: radial-gradient(circle at top, rgba(15,23,42,0.9), rgba(15,23,42,0.82));
-      box-shadow: 0 18px 40px rgba(15,23,42,0.9);
-    }
+.badge {
+  font-size: 0.75rem;
+  border: 1px solid var(--accent-blue);
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(59,130,246,0.2);
+  margin-left: 0.5rem;
+  text-transform: uppercase;
+}
 
-    .clock-label {
-      font-size: 1rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: #a5b4fc;
-      margin-bottom: 0.4rem;
-    }
+.subtitle {
+  color: var(--sub);
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
 
-    .clock-time {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size: 3.2rem;  /* <-- doubled in size */
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      color: #e5f2ff;
-      text-shadow: 0 0 18px rgba(148,197,255,0.6);
-    }
+/* Layout for 2 columns */
+.columns {
+  display: grid;
+  grid-template-columns: 1.8fr 1.2fr;
+  gap: 1.2rem;
+}
+@media (max-width: 900px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}
 
-    .meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-bottom: 0.7rem;
-      font-size: 0.8rem;
-      color: #9ca3af;
-    }
+/* Big UTC clock */
+.clock-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 1.1rem 1.5rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(148,197,253,0.6);
+  background: radial-gradient(circle at top, rgba(15,23,42,0.95), rgba(15,23,42,0.85));
+  margin-bottom: 1rem;
+  box-shadow: 0 18px 40px rgba(15,23,42,0.9);
+}
 
-    .pill {
-      padding: 0.18rem 0.65rem;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      border: 1px solid rgba(52,211,153,0.7);
-      color: #bbf7d0;
-      background: rgba(22,163,74,0.22);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
+.clock-label {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.35rem;
+  color: #a5b4fc;
+}
 
-    /* PET ALERT TICKER — highly visible */
-    .ticker {
-      display: flex;
-      align-items: center;
-      gap: 0.55rem;
-      margin: 0.3rem 0 1rem;
-      padding: 0.65rem 1.1rem;
-      border-radius: 999px;
-      border: 1px solid rgba(96,165,250,0.9);
-      background: radial-gradient(circle at left, rgba(15,23,42,0.96), rgba(15,23,42,0.92));
-      font-size: 1rem;
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      box-shadow: 0 14px 34px rgba(15,23,42,0.9);
-    }
+.clock-time {
+  font-family: ui-monospace, monospace;
+  font-size: 3.4rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #e5f2ff;
+  text-shadow: 0 0 18px rgba(148,197,255,0.6);
+}
 
-    .ticker-label {
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      padding: 0.25rem 0.7rem;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.85);
-      background: rgba(15,23,42,0.98);
-      color: #bfdbfe;
-    }
+/* Card styling */
+.card {
+  background: var(--panel);
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  padding: 1rem;
+  box-shadow: 0 18px 40px rgba(15,23,42,0.9);
+}
 
-    /* Ticker color states */
-    .ticker--idle {
-      border-color: rgba(96,165,250,0.9);
-    }
-    .ticker--warning {
-      border-color: rgba(251,191,36,0.95);
-      background: radial-gradient(circle at left, rgba(30,64,175,0.9), rgba(180,83,9,0.55));
-      box-shadow: 0 0 24px rgba(250,204,21,0.7);
-    }
-    .ticker--danger {
-      border-color: rgba(248,113,113,1);
-      background: radial-gradient(circle at left, rgba(30,64,175,0.9), rgba(185,28,28,0.7));
-      box-shadow: 0 0 26px rgba(248,113,113,0.75);
-      animation: tickerPulse 0.9s ease-in-out infinite alternate;
-    }
+/* Headings in card */
+.card-title {
+  font-size: 1rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
 
-    @keyframes tickerPulse {
-      from { transform: translateY(0); }
-      to   { transform: translateY(-1px); }
-    }
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.6rem;
+  border: 1px solid rgba(55,65,81,0.9);
+  border-radius: 0.7rem;
+  overflow: hidden;
+  font-size: 0.85rem;
+}
 
-    /* Layout: left rallies, right pets */
-    .columns {
-      display: grid;
-      grid-template-columns: minmax(0, 2fr) minmax(0, 1.6fr);
-      gap: 1rem;
-    }
-    @media (max-width: 900px) {
-      .columns {
-        grid-template-columns: 1fr;
-      }
-    }
+thead {
+  background: rgba(15,23,42,0.98);
+}
 
-    /* Cards */
-    .card {
-      border-radius: 1rem;
-      border: 1px solid rgba(148,163,184,0.4);
-      background: radial-gradient(circle at top, rgba(15,23,42,0.96), rgba(15,23,42,0.92));
-      padding: 1rem;
-      box-shadow: 0 18px 40px rgba(15,23,42,0.9);
-    }
+th, td {
+  padding: 0.5rem 0.6rem;
+}
 
-    .card-title {
-      font-size: 1rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
+/* Alignment fixes */
+.rally-table th:nth-child(1),
+.rally-table td:nth-child(1),
+.rally-table th:nth-child(2),
+.rally-table td:nth-child(2) {
+  text-align: left;
+}
+.rally-table th:nth-child(3),
+.rally-table td:nth-child(3),
+.rally-table th:nth-child(4),
+.rally-table td:nth-child(4) {
+  text-align: right;
+}
 
-    /* Tables */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-      margin-top: 0.4rem;
-      border: 1px solid rgba(55,65,81,0.9);
-      border-radius: 0.75rem;
-      overflow: hidden;
-    }
+.pets-table th:nth-child(1),
+.pets-table td:nth-child(1) {
+  text-align: left;
+}
+.pets-table th:nth-child(2),
+.pets-table td:nth-child(2),
+.pets-table th:nth-child(3),
+.pets-table td:nth-child(3) {
+  text-align: center;
+}
 
-    thead {
-      background: rgba(15,23,42,0.98);
-    }
+/* Order bubble */
+.order-badge {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(15,23,42,0.8);
+}
 
-    th, td {
-      padding: 0.45rem 0.5rem;
-    }
+/* First tag */
+.first-tag {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  margin-left: 0.35rem;
+  background: rgba(22,163,74,0.22);
+  border: 1px solid var(--accent-green);
+  color: #bbf7d0;
+}
 
-    .order-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 1.5rem;
-      height: 1.5rem;
-      border-radius: 999px;
-      background: rgba(15,23,42,0.8);
-      border: 1px solid rgba(148,163,184,0.7);
-      font-size: 0.8rem;
-    }
+/* Pet badges */
+.pet-badge {
+  padding: 0.15rem 0.55rem;
+  border-radius: 0.8rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--border);
+}
 
-    .first-tag {
-      font-size: 0.7rem;
-      padding: 0.1rem 0.4rem;
-      border-radius: 999px;
-      border: 1px solid rgba(52,211,153,0.7);
-      color: #bbf7d0;
-      background: rgba(22,163,74,0.23);
-      margin-left: 0.25rem;
-    }
+.pet-badge--active {
+  background: rgba(22,163,74,0.22);
+  border-color: var(--accent-green);
+  color: #bbf7d0;
+}
+.pet-badge--soon { /* <15m */
+  background: rgba(234,179,8,0.18);
+  border-color: var(--accent-yellow);
+  color: #facc15;
+}
+.pet-badge--critical { /* <5m */
+  background: rgba(248,113,113,0.18);
+  border-color: var(--accent-red);
+  color: #fecaca;
+}
+.pet-badge--off {
+  background: rgba(15,23,42,0.8);
+  color: var(--sub);
+}
+.pet-badge--none {
+  color: var(--sub);
+}
 
-    /* Pet badges with updated thresholds */
-    .pet-badge {
-      padding: 0.15rem 0.55rem;
-      border-radius: 0.8rem;
-      font-size: 0.8rem;
-      border: 1px solid rgba(148,163,184,0.6);
-      white-space: nowrap;
-    }
-    .pet-badge--none { color: #9ca3af; }
-    .pet-badge--active {
-      background: rgba(22,163,74,0.22);
-      color: #bbf7d0;
-      border-color: rgba(34,197,94,0.8);
-    }
-    .pet-badge--soon { /* <15 min */
-      background: rgba(234,179,8,0.18);
-      border-color: rgba(245,158,11,0.9);
-      color: #facc15;
-    }
-    .pet-badge--critical { /* <5 min */
-      background: rgba(248,113,113,0.18);
-      border-color: rgba(248,113,113,0.9);
-      color: #fecaca;
-    }
-    .pet-badge--off {
-      background: rgba(15,23,42,0.9);
-      border-color: rgba(75,85,99,0.9);
-      color: #9ca3af;
-    }
+/* Ticker */
+.ticker {
+  margin: 0.6rem 0 1.3rem;
+  padding: 0.7rem 1.1rem;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 1px solid var(--accent-blue);
+  background: rgba(15,23,42,0.95);
+  box-shadow: 0 14px 34px rgba(0,0,0,0.6);
+}
 
-    textarea {
-      width: 100%;
-      min-height: 110px;
-      border-radius: 0.75rem;
-      background: rgba(15,23,42,0.9);
-      border: 1px solid rgba(55,65,81,0.9);
-      padding: 0.6rem 0.7rem;
-      color: #e5e7eb;
-      resize: vertical;
-    }
+.ticker-label {
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(15,23,42,1);
+}
 
-  </style>
+.ticker--idle { border-color: var(--accent-blue); }
+.ticker--warning { border-color: var(--accent-yellow); box-shadow: 0 0 20px rgba(250,204,21,0.6); }
+.ticker--danger { border-color: var(--accent-red); box-shadow: 0 0 25px rgba(248,113,113,0.7); }
+
+/* Chat box */
+textarea {
+  width: 100%;
+  min-height: 120px;
+  background: rgba(15,23,42,0.9);
+  border: 1px solid var(--border);
+  border-radius: 0.7rem;
+  padding: 0.7rem;
+  color: var(--text);
+  font-size: 0.85rem;
+  resize: vertical;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.45rem 0.9rem;
+  background: rgba(59,130,246,0.3);
+  border: 1px solid var(--accent-blue);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.btn:hover {
+  background: rgba(59,130,246,0.4);
+}
+.btn.secondary {
+  background: rgba(15,23,42,0.85);
+  border-color: var(--border);
+}
+
+</style>
 </head>
+
 <body>
-  <main class="app">
-    <header>
-      <h1>
-        Whiteout Survival – Battle Room
-        <span class="badge">Rallies & Pets</span>
-      </h1>
-      <p class="subtitle">
-        Left: rally timing & macros. Right: full live pet overview for all whales.
-      </p>
-    </header>
+<div class="app">
 
-    <section>
-      <div class="meta">
-        <span class="pill">All rallies land together</span>
-        <div class="clock-panel">
-          <div class="clock-label">Battle Time (UTC)</div>
-          <div class="clock-time" id="utcClock">--:--:--</div>
-        </div>
-      </div>
+  <h1>Whiteout Survival – Battle Dashboard <span class="badge">Rallies & Pets</span></h1>
+  <div class="subtitle">Left: Rally sync. Right: Full pet status for all whales.</div>
 
-      <!-- Ticker -->
-      <div class="ticker ticker--idle" id="ticker">
-        <span class="ticker-label">Pet Alert</span>
-        <span id="tickerText">Loading…</span>
-      </div>
+  <!-- Big UTC Clock -->
+  <div class="clock-panel">
+    <div class="clock-label">Battle Time (UTC)</div>
+    <div class="clock-time" id="utcClock">--:--:--</div>
+  </div>
 
-      <div class="columns">
-        <!-- LEFT: RALLIES -->
-        <div class="card">
-          <div class="card-title">Rally Timing</div>
+  <!-- Pet Ticker -->
+  <div class="ticker ticker--idle" id="ticker">
+    <span class="ticker-label">Pet Alert</span>
+    <span id="tickerText">Loading…</span>
+  </div>
 
-          <table>
-            <thead>
-              <tr>
-                <th>Order</th>
-                <th>Player</th>
-                <th>March (s)</th>
-                <th>Offset</th>
-              </tr>
-            </thead>
-            <tbody id="rallyTableBody"></tbody>
-          </table>
+  <div class="columns">
 
-          <div style="margin-top: 0.9rem;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem; gap:0.5rem;">
-              <div style="font-size:0.9rem; font-weight:500;">Alliance Chat Message</div>
-              <button id="copyBtn" class="btn secondary" type="button">📋 Copy</button>
-            </div>
-            <textarea id="shareText" readonly></textarea>
-          </div>
-        </div>
+    <!-- LEFT: RALLIES -->
+    <div class="card">
+      <div class="card-title">Rally Timing</div>
 
-        <!-- RIGHT: PETS -->
-        <div class="card">
-          <div class="card-title">Pet Status – All Whales</div>
+      <table class="rally-table">
+        <thead><tr>
+          <th>Order</th>
+          <th>Player</th>
+          <th>March</th>
+          <th>Offset</th>
+        </tr></thead>
+        <tbody id="rallyTableBody">
+          <tr><td colspan="4">Loading…</td></tr>
+        </tbody>
+      </table>
 
-          <table>
-            <thead>
-              <tr>
-                <th>Whale</th>
-                <th>Window</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="petsTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  </main>
+      <h3 style="margin-top:1rem; font-size:1rem;">Alliance Chat Message</h3>
+      <button id="copyBtn" class="btn secondary" style="float:right; margin-bottom:0.4rem;">📋 Copy</button>
 
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyxyAZJahC4ouheWWMKt0KZ7fFW3PPkeTndnu3HSyuIyFZfIakN294TeC9nANU8Y5j-/exec";
+      <textarea id="shareText" readonly>Loading…</textarea>
+    </div>
 
-    const rallyTableBody = document.getElementById("rallyTableBody");
-    const petsTableBody = document.getElementById("petsTableBody");
-    const tickerEl = document.getElementById("ticker");
-    const tickerTextEl = document.getElementById("tickerText");
-    const shareTextEl = document.getElementById("shareText");
-    const utcClockEl = document.getElementById("utcClock");
+    <!-- RIGHT: PETS -->
+    <div class="card">
+      <div class="card-title">Pet Status – All Whales</div>
 
-    let planRows = [];
-    let petSchedule = [];
+      <table class="pets-table">
+        <thead><tr>
+          <th>Whale</th>
+          <th>Window</th>
+          <th>Status</th>
+        </tr></thead>
 
-    /* -----------------------
-       LARGE UTC CLOCK (-1s)
-    ----------------------- */
-    function updateClock() {
-      const now = new Date(Date.now() - 1000);
-      utcClockEl.textContent = now.toISOString().substring(11, 19);
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
+        <tbody id="petsTableBody">
+          <tr><td colspan="3">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
 
-    /* -----------------------
-       PET STATUS LOGIC
-    ----------------------- */
-    function formatMins(mins) {
-      return mins <= 1 ? Math.round(mins * 60) + "s" : Math.round(mins) + "m";
-    }
+  </div><!-- end columns -->
+</div><!-- end app -->
 
-    function getPetStatus(p) {
-      const start = p.PetStartUTC ? new Date(p.PetStartUTC) : null;
-      const end = p.PetEndUTC ? new Date(p.PetEndUTC) : null;
-      if (!start || !end) return { label: "No pet", type: "none" };
 
-      const now = new Date();
-      const msToStart = start - now;
-      const msToEnd = end - now;
-      const minToStart = msToStart / 60000;
-      const minToEnd = msToEnd / 60000;
+<script>
+/* ==============================
+   CONFIG
+============================== */
+const API_URL = "YOUR_WEB_APP_URL_HERE";
 
-      if (msToEnd <= 0) return { label: "Expired", type: "off" };
+/* ==============================
+   GLOBALS
+============================== */
+let planRows = [];
+let petSchedule = [];
+let serverOffsetMs = 0;
 
-      if (msToStart > 0) {
-        return {
-          label: `Starts in ${formatMins(minToStart)}`,
-          type: minToStart <= 5 ? "soon" : "upcoming"
-        };
-      }
+/* ==============================
+   CLOCK – SERVER SYNCED
+============================== */
+function updateClock() {
+  const now = new Date(Date.now() + serverOffsetMs - 1000); // still apply WoS -1s correction
+  document.getElementById("utcClock").textContent =
+    now.toISOString().substring(11,19);
+}
+setInterval(updateClock, 1000);
 
-      // Active thresholds UPDATED:
-      if (minToEnd < 5) return { label: `Active (${formatMins(minToEnd)} left)`, type: "critical" };
-      if (minToEnd < 15) return { label: `Active (${formatMins(minToEnd)} left)`, type: "soon" };
+/* ==============================
+   FETCH DATA
+============================== */
+async function fetchData() {
+  const res = await fetch(API_URL + "?t=" + Date.now());
+  const data = await res.json();
 
-      return { label: `Active (${formatMins(minToEnd)} left)`, type: "active" };
-    }
+  // Server time sync
+  if (data.updated) {
+    const server = new Date(data.updated).getTime();
+    const local = Date.now();
+    serverOffsetMs = server - local;
+  }
 
-    /* -----------------------
-       RENDER PETS (RIGHT)
-    ----------------------- */
-    function renderPetsTable() {
-      petsTableBody.innerHTML = "";
-      petSchedule.forEach(p => {
-        const name = p.WhaleName || p.PlayerName || "-";
-        const s = p.PetStartUTC ? new Date(p.PetStartUTC).toISOString().substring(11, 16) : "-";
-        const e = p.PetEndUTC ? new Date(p.PetEndUTC).toISOString().substring(11, 16) : "-";
+  planRows = data.plan || data.rows || [];
+  petSchedule = data.pets || [];
 
-        const status = getPetStatus(p);
+  renderRallies();
+  renderPets();
+  updateTicker();
+  generateChatText();
 
-        petsTableBody.innerHTML += `
-          <tr>
-            <td>${name}</td>
-            <td>${s} - ${e}</td>
-            <td><span class="pet-badge pet-badge--${status.type}">${status.label}</span></td>
-          </tr>
-        `;
-      });
-    }
+  updateClock();
+}
 
-    /* -----------------------
-       RALLY TABLE (LEFT)
-    ----------------------- */
-    function renderRallyTable() {
-      rallyTableBody.innerHTML = "";
-      planRows.forEach((r, i) => {
-        rallyTableBody.innerHTML += `
-          <tr>
-            <td><span class="order-badge">${r.CallOrder}</span></td>
-            <td>${r.PlayerName} ${i === 0 ? '<span class="first-tag">First</span>' : ''}</td>
-            <td>${r.MarchTimeSec}</td>
-            <td>${r.OffsetVsFirstSec}s</td>
-          </tr>
-        `;
-      });
-    }
+/* ==============================
+   RENDER RALLY TABLE
+============================== */
+function renderRallies() {
+  const tbody = document.getElementById("rallyTableBody");
+  tbody.innerHTML = "";
 
-    /* -----------------------
-       TICKER
-    ----------------------- */
-    function updateTicker() {
-      const now = new Date();
-      let expiring = [];
-      let expired = [];
-      let upcoming = [];
+  planRows.forEach((r,i) => {
+    tbody.innerHTML += `
+      <tr>
+        <td><span class="order-badge">${r.CallOrder}</span></td>
+        <td>${r.PlayerName}${i===0?'<span class="first-tag">First</span>':''}</td>
+        <td>${r.MarchTimeSec}</td>
+        <td>${r.OffsetVsFirstSec}s</td>
+      </tr>`;
+  });
+}
 
-      petSchedule.forEach(p => {
-        const start = new Date(p.PetStartUTC);
-        const end = new Date(p.PetEndUTC);
-        const minStart = (start - now) / 60000;
-        const minEnd   = (end   - now) / 60000;
+/* ==============================
+   PET LOGIC
+============================== */
+function minutesText(min) {
+  return min <= 1 ? Math.round(min*60) + "s" : Math.round(min) + "m";
+}
 
-        const name = p.WhaleName || p.PlayerName;
+function petStatus(p) {
+  const now = new Date();
+  const s = new Date(p.PetStartUTC);
+  const e = new Date(p.PetEndUTC);
 
-        if (minEnd <= 0 && minEnd >= -5) expired.push(name);
-        else if (minEnd > 0 && minEnd < 5) expiring.push(name);
-        else if (minStart > 0 && minStart < 5) upcoming.push(name);
-      });
+  if (!s || !e || isNaN(s) || isNaN(e)) return {label:"No pet", type:"none"};
 
-      if (expired.length) {
-        tickerTextEl.textContent = `${expired.join(", ")} pets EXPIRED – update marches!`;
-        tickerEl.className = "ticker ticker--danger";
-      }
-      else if (expiring.length) {
-        tickerTextEl.textContent = `${expiring.join(", ")} pets <5m left`;
-        tickerEl.className = "ticker ticker--danger";
-      }
-      else if (upcoming.length) {
-        tickerTextEl.textContent = `${upcoming.join(", ")} pets activate soon`;
-        tickerEl.className = "ticker ticker--warning";
-      }
-      else {
-        tickerTextEl.textContent = "No pet changes in the next 15 minutes.";
-        tickerEl.className = "ticker ticker--idle";
-      }
-    }
+  const mStart = (s - now)/60000;
+  const mEnd = (e - now)/60000;
 
-    /* -----------------------
-       COPY TEXT MACRO (UPDATED HEADER)
-    ----------------------- */
-    function generateShareText() {
-      let lines = ["ATTENTION - WHALE RALLY TIMINGS", ""];
+  if (mEnd <= 0) return {label:"Expired", type:"off"};
 
-      planRows.forEach((r, i) => {
-        if (i === 0) lines.push(`${r.PlayerName} – call first`);
-        else lines.push(`${r.PlayerName} – call after ${r.OffsetVsFirstSec}s`);
-      });
+  if (mStart > 0) {
+    return {
+      label: "Starts in " + minutesText(mStart),
+      type: mStart <= 5 ? "soon" : "upcoming"
+    };
+  }
 
-      shareTextEl.value = lines.join("\n");
-    }
+  // Active thresholds:
+  if (mEnd < 5)  return { label:`Active (${minutesText(mEnd)} left)`, type:"critical" };
+  if (mEnd < 15) return { label:`Active (${minutesText(mEnd)} left)`, type:"soon" };
 
-    /* -----------------------
-       LOAD DATA
-    ----------------------- */
-    async function fetchData() {
-      const res = await fetch(API_URL + "?t=" + Date.now());
-      const data = await res.json();
-      planRows = data.plan || data.rows || [];
-      petSchedule = data.pets || [];
+  return { label:`Active (${minutesText(mEnd)} left)`, type:"active" };
+}
 
-      renderRallyTable();
-      renderPetsTable();
-      updateTicker();
-      generateShareText();
-    }
+/* ==============================
+   RENDER PET TABLE
+============================== */
+function renderPets() {
+  const tbody = document.getElementById("petsTableBody");
+  tbody.innerHTML = "";
 
-    /* Auto-refresh + initial startup */
-    setInterval(fetchData, 10000);
-    fetchData();
+  petSchedule.forEach(p => {
+    const name = p.WhaleName || p.PlayerName;
+    const s = new Date(p.PetStartUTC).toISOString().substring(11,16);
+    const e = new Date(p.PetEndUTC).toISOString().substring(11,16);
 
-  </script>
+    const st = petStatus(p);
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${name}</td>
+        <td>${s} - ${e}</td>
+        <td><span class="pet-badge pet-badge--${st.type}">${st.label}</span></td>
+      </tr>`;
+  });
+}
+
+/* ==============================
+   TICKER
+============================== */
+function updateTicker() {
+  const now = new Date();
+  const ticker = document.getElementById("ticker");
+  const text = document.getElementById("tickerText");
+
+  let expired=[], expiring=[], upcoming=[];
+
+  petSchedule.forEach(p => {
+    const s = new Date(p.PetStartUTC);
+    const e = new Date(p.PetEndUTC);
+    const mStart=(s-now)/60000;
+    const mEnd=(e-now)/60000;
+    const name=p.WhaleName || p.PlayerName;
+
+    if (mEnd<=0 && mEnd>-5) expired.push(name);
+    else if (mEnd>0 && mEnd<5) expiring.push(name);
+    else if (mStart>0 && mStart<5) upcoming.push(name);
+  });
+
+  if (expired.length) {
+    text.textContent = `${expired.join(", ")} pets EXPIRED – update marches!`;
+    ticker.className = "ticker ticker--danger";
+  }
+  else if (expiring.length) {
+    text.textContent = `${expiring.join(", ")} pets <5m left`;
+    ticker.className = "ticker ticker--danger";
+  }
+  else if (upcoming.length) {
+    text.textContent = `${upcoming.join(", ")} pets activate soon`;
+    ticker.className = "ticker ticker--warning";
+  }
+  else {
+    text.textContent = "No pet changes in the next 15 minutes.";
+    ticker.className = "ticker ticker--idle";
+  }
+}
+
+/* ==============================
+   RALLY CHAT MACRO
+============================== */
+function generateChatText() {
+  let lines = ["ATTENTION - WHALE RALLY TIMINGS", ""];
+
+  planRows.forEach((r,i) => {
+    if (i===0) lines.push(`${r.PlayerName} – call first`);
+    else lines.push(`${r.PlayerName} – call after ${r.OffsetVsFirstSec}s`);
+  });
+
+  document.getElementById("shareText").value = lines.join("\n");
+}
+
+/* Copy button */
+document.getElementById("copyBtn").onclick = () => {
+  navigator.clipboard.writeText(document.getElementById("shareText").value);
+};
+
+/* ==============================
+   REFRESH LOOP
+============================== */
+setInterval(fetchData, 10000);
+fetchData();
+
+</script>
 </body>
 </html>
