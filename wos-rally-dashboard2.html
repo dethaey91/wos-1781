@@ -9,7 +9,8 @@
 :root {
   --bg: #020617;
   --panel: rgba(15,23,42,0.92);
-  --border: rgba(148,163,184,0.45);
+  --border: rgba(55,65,81,0.9);
+  --border-soft: rgba(148,163,184,0.45);
   --text: #e5e7eb;
   --sub: #9ca3af;
   --accent-blue: rgba(96,165,250,0.9);
@@ -37,7 +38,7 @@ body {
     linear-gradient(to bottom, #020617, #020617 45%, #020617);
   border-radius: 1.5rem;
   padding: 2rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
   box-shadow: 0 30px 80px rgba(0,0,0,0.65);
 }
 
@@ -77,9 +78,13 @@ h1 {
   }
 }
 
-/* Big UTC clock */
-.clock-panel {
+/* Big UTC clock – box fits content */
+.clock-row {
   display: flex;
+  justify-content: flex-end;
+}
+.clock-panel {
+  display: inline-flex;
   flex-direction: column;
   align-items: flex-end;
   padding: 1.1rem 1.5rem;
@@ -109,7 +114,7 @@ h1 {
 .card {
   background: var(--panel);
   border-radius: 1rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
   padding: 1rem;
   box-shadow: 0 18px 40px rgba(15,23,42,0.9);
 }
@@ -125,7 +130,7 @@ h1 {
   color: var(--sub);
 }
 
-/* Stack for right column (our + enemy pets) */
+/* Right column stacking */
 .right-stack {
   display: flex;
   flex-direction: column;
@@ -149,7 +154,7 @@ h1 {
 .ticker-label {
   padding: 0.25rem 0.7rem;
   border-radius: 999px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
   background: rgba(15,23,42,1);
 }
 .ticker--idle { border-color: var(--accent-blue); }
@@ -161,7 +166,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 0.6rem;
-  border: 1px solid rgba(55,65,81,0.9);
+  border: 1px solid var(--border);
   border-radius: 0.7rem;
   overflow: hidden;
   font-size: 0.85rem;
@@ -207,7 +212,7 @@ th, td {
   width: 1.55rem;
   height: 1.55rem;
   border-radius: 999px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
   background: rgba(15,23,42,0.8);
 }
 
@@ -222,12 +227,12 @@ th, td {
   color: #bbf7d0;
 }
 
-/* Pet badges (shared for both our + enemy) */
+/* Pet badges */
 .pet-badge {
   padding: 0.15rem 0.55rem;
   border-radius: 0.8rem;
   font-size: 0.8rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
 }
 .pet-badge--active {
   background: rgba(22,163,74,0.22);
@@ -244,20 +249,44 @@ th, td {
   border-color: var(--accent-red);
   color: #fecaca;
 }
+.pet-badge--expired { /* NEW: expired (distinct from no data) */
+  background: rgba(30,64,175,0.35);
+  border-color: var(--accent-red);
+  color: #fecaca;
+}
 .pet-badge--off {
   background: rgba(15,23,42,0.8);
   color: var(--sub);
 }
 .pet-badge--none {
+  background: rgba(15,23,42,0.8);
   color: var(--sub);
 }
 
-/* Chat textarea */
+/* Chat block area */
+.chat-block {
+  margin-top: 1rem;
+  padding: 0.75rem 0.85rem 0.9rem;
+  border-radius: 0.95rem;
+  border: 1px solid var(--border);
+  background: rgba(15,23,42,0.92);
+}
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.chat-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
 textarea {
   width: 100%;
   min-height: 120px;
-  background: rgba(15,23,42,0.9);
-  border: 1px solid var(--border);
+  background: rgba(15,23,42,0.96);
+  border: 1px solid var(--border-soft);
   border-radius: 0.7rem;
   padding: 0.7rem;
   color: var(--text);
@@ -265,43 +294,58 @@ textarea {
   resize: vertical;
 }
 
-/* Buttons */
+/* Buttons – restored hover animation */
 .btn {
-  padding: 0.45rem 0.9rem;
-  background: rgba(59,130,246,0.3);
-  border: 1px solid var(--accent-blue);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.9rem;
   border-radius: 999px;
+  border: 1px solid var(--accent-blue);
+  background: radial-gradient(circle at top left, rgba(59,130,246,0.45), rgba(15,23,42,0.98));
+  color: #e5e7eb;
+  font-size: 0.8rem;
+  font-weight: 500;
   cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.08s ease;
 }
 .btn:hover {
-  background: rgba(59,130,246,0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(37,99,235,0.6);
+}
+.btn:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 18px rgba(37,99,235,0.6);
 }
 .btn.secondary {
-  background: rgba(15,23,42,0.85);
-  border-color: var(--border);
+  border-color: var(--border-soft);
+  background: radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,0.9));
 }
 </style>
 </head>
 
 <body>
 <div class="app">
-  <h1>Whiteout Survival – Battle Dashboard <span class="badge">Rallies & Pets</span></h1>
-  <div class="subtitle">Left: Rally sync. Right: Our pets & enemy pets.</div>
+  <h1>
+    Whiteout Survival – Battle Dashboard
+    <span class="badge">Rallies & Pets</span>
+  </h1>
+  <div class="subtitle">Left: Rally sync. Right: our pets & enemy pets.</div>
 
-  <!-- Big UTC clock -->
-  <div class="clock-panel">
-    <div class="clock-label">Battle Time (UTC)</div>
-    <div class="clock-time" id="utcClock">--:--:--</div>
+  <div class="clock-row">
+    <div class="clock-panel">
+      <div class="clock-label">Battle Time (UTC)</div>
+      <div class="clock-time" id="utcClock">--:--:--</div>
+    </div>
   </div>
 
-  <!-- Pet ticker (our pets only) -->
   <div class="ticker ticker--idle" id="ticker">
     <span class="ticker-label">Pet Alert</span>
     <span id="tickerText">Loading…</span>
   </div>
 
   <div class="columns">
-    <!-- LEFT: RALLIES -->
+    <!-- LEFT: RALLY CARD -->
     <div class="card">
       <div class="card-title">Rally Timing</div>
       <div class="card-subtitle">Based on march times from Plan sheet.</div>
@@ -320,12 +364,16 @@ textarea {
         </tbody>
       </table>
 
-      <h3 style="margin-top:1rem; font-size:1rem;">Alliance Chat Message</h3>
-      <button id="copyBtn" class="btn secondary" style="float:right; margin-bottom:0.4rem;">📋 Copy</button>
-      <textarea id="shareText" readonly>Loading…</textarea>
+      <div class="chat-block">
+        <div class="chat-header">
+          <div class="chat-title">Alliance Chat Message</div>
+          <button id="copyBtn" class="btn secondary" type="button">📋 Copy</button>
+        </div>
+        <textarea id="shareText" readonly>Loading…</textarea>
+      </div>
     </div>
 
-    <!-- RIGHT: PETS (ours + enemy) -->
+    <!-- RIGHT: OUR + ENEMY PETS -->
     <div class="right-stack">
       <div class="card">
         <div class="card-title">Our Pets – All Whales</div>
@@ -347,7 +395,7 @@ textarea {
 
       <div class="card">
         <div class="card-title">Enemy Pets – Opponent Whales</div>
-        <div class="card-subtitle">From EnemyPets tab. Start time only; dashboard assumes 2h duration.</div>
+        <div class="card-subtitle">From EnemyPets tab. Start time only, dashboard assumes 2h duration.</div>
 
         <table class="pets-table">
           <thead>
@@ -375,9 +423,9 @@ let enemySchedule = [];
 let serverOffsetMs = 0;
 let serverRefDate = null;
 
-/* CLOCK (server-synced, -1s WoS tweak) */
+/* CLOCK – server synced, no extra 1s offset anymore */
 function updateClock() {
-  const now = new Date(Date.now() + serverOffsetMs - 1000);
+  const now = new Date(Date.now() + serverOffsetMs);
   document.getElementById("utcClock").textContent =
     now.toISOString().substring(11,19);
 }
@@ -388,7 +436,7 @@ function minutesText(min) {
   return min <= 1 ? Math.round(min*60) + "s" : Math.round(min) + "m";
 }
 
-/* Our pet status (full start+end from sheet) */
+/* Our pet status */
 function petStatus(p) {
   const now = new Date(Date.now() + serverOffsetMs);
   const s = new Date(p.PetStartUTC);
@@ -398,7 +446,7 @@ function petStatus(p) {
   const mStart = (s - now)/60000;
   const mEnd   = (e - now)/60000;
 
-  if (mEnd <= 0) return {label:"Expired", type:"off"};
+  if (mEnd <= 0) return {label:"Expired", type:"expired"};
 
   if (mStart > 0) {
     return {
@@ -407,27 +455,24 @@ function petStatus(p) {
     };
   }
 
-  // Active thresholds: yellow <15m, red <5m
   if (mEnd < 5)  return { label:`Active (${minutesText(mEnd)} left)`, type:"critical" };
   if (mEnd < 15) return { label:`Active (${minutesText(mEnd)} left)`, type:"soon" };
 
   return { label:`Active (${minutesText(mEnd)} left)`, type:"active" };
 }
 
-/* Enemy time-of-day -> full UTC window (2h duration) */
+/* Enemy window from time-of-day + 2h duration */
 function buildEnemyWindow(p) {
   if (!serverRefDate || !p.PetStartUTC) return null;
-  const raw = new Date(p.PetStartUTC); // likely 1899 date + time
+  const raw = new Date(p.PetStartUTC);
   if (isNaN(raw)) return null;
 
   const h = raw.getUTCHours();
   const m = raw.getUTCMinutes();
-
-  const base = new Date(serverRefDate);
-  base.setUTCHours(h, m, 0, 0);       // start at battle day, UTC time
-  const end  = new Date(base.getTime() + 2 * 60 * 60 * 1000); // +2h
-
-  return { start: base, end: end };
+  const start = new Date(serverRefDate);
+  start.setUTCHours(h, m, 0, 0);
+  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+  return { start, end };
 }
 
 function enemyPetStatus(p) {
@@ -438,7 +483,7 @@ function enemyPetStatus(p) {
   const mStart = (window.start - now)/60000;
   const mEnd   = (window.end   - now)/60000;
 
-  if (mEnd <= 0) return {label:"Expired", type:"off"};
+  if (mEnd <= 0) return {label:"Expired", type:"expired"};
 
   if (mStart > 0) {
     return {
@@ -447,14 +492,13 @@ function enemyPetStatus(p) {
     };
   }
 
-  // Active, same thresholds
   if (mEnd < 5)  return { label:`Active (${minutesText(mEnd)} left)`, type:"critical" };
   if (mEnd < 15) return { label:`Active (${minutesText(mEnd)} left)`, type:"soon" };
 
   return { label:`Active (${minutesText(mEnd)} left)`, type:"active" };
 }
 
-/* Render our pets table */
+/* Render our pets */
 function renderPets() {
   const tbody = document.getElementById("petsTableBody");
   tbody.innerHTML = "";
@@ -474,7 +518,7 @@ function renderPets() {
   });
 }
 
-/* Render enemy pets table */
+/* Render enemy pets */
 function renderEnemyPets() {
   const tbody = document.getElementById("enemyPetsTableBody");
   tbody.innerHTML = "";
