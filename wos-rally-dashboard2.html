@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>WoS Rally Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+      color-scheme: dark;
+    }
+    body {
+      margin: 0;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: center;
+    }
+    .app {
+      width: 100%;
+      max-width: 900px;
+      background: radial-gradient(circle at top left, #1f2937, #020617);
+      border-radius: 1.5rem;
+      padding: 1.75rem 1.5rem 2rem;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.7);
+      border: 1px solid rgba(148,163,184,0.35);
+    }
+    h1 {
+      margin: 0 0 0.25rem;
+      font-size: 1.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .badge {
+      padding: 0.1rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      background: rgba(56,189,248,0.1);
+      border: 1px solid rgba(56,189,248,0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .subtitle {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      margin-bottom: 1rem;
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.6rem;
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+    .pill {
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      border: 1px solid rgba(52,211,153,0.7);
+      color: #bbf7d0;
+      background: rgba(22,163,74,0.25);
+    }
+    .clock {
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.85rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.4);
+      background: rgba(15,23,42,0.9);
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid rgba(96,165,250,0.9);
+      background: radial-gradient(circle at top left, rgba(59,130,246,0.4), rgba(15,23,42,0.98));
+      color: #e5e7eb;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 25px rgba(37,99,235,0.35);
+    }
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+    }
+    .btn.secondary {
+      border-color: rgba(148,163,184,0.7);
+      background: rgba(15,23,42,0.9);
+    }
+    .auto-refresh-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      cursor: pointer;
+    }
+    .ticker {
+      margin: 0.4rem 0 0.7rem;
+      border-radius: 999px;
+      padding: 0.3rem 0.8rem;
+      background: linear-gradient(
+        to right,
+        rgba(15,23,42,0.95),
+        rgba(56,189,248,0.18)
+      );
+      border: 1px solid rgba(59,130,246,0.7);
+      font-size: 0.8rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #tickerText {
+      display: inline-block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 0.3rem;
+      overflow: hidden;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(55,65,81,0.9);
+    }
+    thead {
+      background: rgba(15,23,42,0.98);
+    }
+    th, td {
+      padding: 0.45rem 0.5rem;
+      text-align: left;
+    }
+    th {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #9ca3af;
+      border-bottom: 1px solid rgba(55,65,81,0.9);
+    }
+    tbody tr:nth-child(odd) {
+      background: rgba(15,23,42,0.8);
+    }
+    tbody tr:nth-child(even) {
+      background: rgba(15,23,42,0.6);
+    }
+    tbody tr:first-child {
+      outline: 1px solid rgba(52,211,153,0.7);
+      box-shadow: 0 0 0 1px rgba(16,185,129,0.4);
+    }
+    tbody tr:first-child td {
+      border-bottom: 1px solid rgba(34,197,94,0.4);
+    }
+    .first-tag {
+      font-size: 0.7rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 999px;
+      border: 1px solid rgba(52,211,153,0.7);
+      color: #bbf7d0;
+      background: rgba(22,163,74,0.23);
+      margin-left: 0.25rem;
+    }
+    .order-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.8);
+      border: 1px solid rgba(148,163,184,0.7);
+      font-size: 0.8rem;
+    }
+    .status {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-top: 0.4rem;
+      min-height: 1.2em;
+    }
+    .status.error { color: #fca5a5; }
+    .small {
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-top: 0.4rem;
+    }
+    .share-block {
+      margin-top: 1.2rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(75,85,99,0.9);
+      background: radial-gradient(circle at top right, rgba(30,64,175,0.4), rgba(15,23,42,0.96));
+      padding: 0.9rem 0.9rem 0.8rem;
+    }
+    .share-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      gap: 0.5rem;
+    }
+    .share-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      min-height: 110px;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(55,65,81,0.9);
+      background: rgba(15,23,42,0.95);
+      padding: 0.6rem 0.7rem;
+      color: #e5e7eb;
+      font-size: 0.8rem;
+      resize: vertical;
+      outline: none;
+    }
+    textarea:focus {
+      border-color: rgba(56,189,248,0.9);
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.6);
+    }
+    .copy-note {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 0.35rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>
+        WoS Rally Live Dashboard
+        <span class="badge">SvS / Castle Battle</span>
+      </h1>
+      <p class="subtitle">
+        Live view from Google Sheets. Strategists update march times & pets; everyone watches this during the fight.
+      </p>
+    </header>
+
+    <section>
+      <div class="meta">
+        <div>
+          <span class="pill">All rallies land together</span>
+        </div>
+        <div class="clock" id="utcClock">UTC: --:--:--</div>
+      </div>
+
+      <div class="controls">
+        <button id="refreshBtn" class="btn" type="button">🔄 Refresh now</button>
+        <label class="auto-refresh-label">
+          <input type="checkbox" id="autoRefreshToggle" checked />
+          Auto-refresh every&nbsp;
+          <select id="refreshIntervalSelect">
+            <option value="5">5s</option>
+            <option value="10" selected>10s</option>
+            <option value="20">20s</option>
+            <option value="30">30s</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="ticker">
+        <span id="tickerText">Loading pet schedule…</span>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Player</th>
+            <th>March Time (s)</th>
+            <th>Offset vs First</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr>
+            <td colspan="4" style="text-align:center; padding:0.9rem 0; color:#6b7280;">
+              Loading data from Google Sheets...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div id="status" class="status"></div>
+      <div class="small">
+        Tip: keep this dashboard open during SvS; let only one or two strategists edit the sheet to avoid chaos.
+      </div>
+
+      <!-- COPY-PASTE RALLY PLAN BLOCK -->
+      <div class="share-block">
+        <div class="share-header">
+          <div class="share-title">Rally plan text for chat</div>
+          <button id="copyBtn" class="btn secondary" type="button">📋 Copy to clipboard</button>
+        </div>
+        <textarea id="shareText" readonly>Rally plan will appear here once data is loaded.</textarea>
+        <div class="copy-note">
+          Paste this into alliance / state chat before each big rally wave.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyxyAZJahC4ouheWWMKt0KZ7fFW3PPkeTndnu3HSyuIyFZfIakN294TeC9nANU8Y5j-/exec"; // <-- put your Apps Script Web App URL here
+
+    const tableBody = document.getElementById("tableBody");
+    const statusEl = document.getElementById("status");
+    const lastUpdatedEl = document.getElementById("lastUpdated");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const autoRefreshToggle = document.getElementById("autoRefreshToggle");
+    const refreshIntervalSelect = document.getElementById("refreshIntervalSelect");
+    const shareTextEl = document.getElementById("shareText");
+    const copyBtn = document.getElementById("copyBtn");
+    const tickerTextEl = document.getElementById("tickerText");
+    const utcClockEl = document.getElementById("utcClock");
+
+    let refreshTimer = null;
+    let petSchedule = [];
+
+    function updateClock() {
+      const now = new Date();
+      // show only time part in UTC
+      const iso = now.toISOString();
+      const timePart = iso.substring(11, 19); // HH:MM:SS
+      utcClockEl.textContent = "UTC: " + timePart;
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function formatOffset(offset) {
+      const n = Number(offset) || 0;
+      if (n === 0) return "0s (first caller)";
+      return n + "s after first";
+    }
+
+    async function fetchData() {
+      statusEl.textContent = "Updating from sheet...";
+      statusEl.classList.remove("error");
+
+      try {
+        const res = await fetch(API_URL + "?t=" + Date.now()); // cache-buster
+        if (!res.ok) {
+          throw new Error("HTTP " + res.status);
+        }
+        const data = await res.json();
+        const rows = data.plan || [];
+        petSchedule = data.pets || [];
+
+        renderTable(rows);
+        generateShareText(rows);
+        updateTicker(); // use freshly loaded petSchedule
+
+        const updated = new Date(data.updated || Date.now());
+        statusEl.textContent = "Loaded " + rows.length + " rows from Google Sheets.";
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "Error loading data: " + err.message;
+        statusEl.classList.add("error");
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="4" style="text-align:center; padding:0.9rem 0; color:#fca5a5;">
+              Failed to load data. Check the API URL or your internet connection.
+            </td>
+          </tr>
+        `;
+        tickerTextEl.textContent = "Could not load pet schedule.";
+      }
+    }
+
+    function renderTable(rows) {
+      tableBody.innerHTML = "";
+
+      if (!rows.length) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 4;
+        td.style.textAlign = "center";
+        td.style.padding = "0.9rem 0";
+        td.style.color = "#6b7280";
+        td.textContent = "No data. Check that the Plan sheet has values.";
+        tr.appendChild(td);
+        tableBody.appendChild(tr);
+        return;
+      }
+
+      rows.forEach((row, index) => {
+        const tr = document.createElement("tr");
+
+        const orderTd = document.createElement("td");
+        const badge = document.createElement("span");
+        badge.className = "order-badge";
+        badge.textContent = row.CallOrder || (index + 1);
+        orderTd.appendChild(badge);
+
+        const playerTd = document.createElement("td");
+        playerTd.textContent = row.PlayerName || "-";
+        if (index === 0) {
+          const firstTag = document.createElement("span");
+          firstTag.className = "first-tag";
+          firstTag.textContent = "First caller";
+          playerTd.appendChild(firstTag);
+        }
+
+        const timeTd = document.createElement("td");
+        timeTd.textContent = row.MarchTimeSec || "-";
+
+        const offsetTd = document.createElement("td");
+        offsetTd.textContent = formatOffset(row.OffsetVsFirstSec);
+
+        tr.appendChild(orderTd);
+        tr.appendChild(playerTd);
+        tr.appendChild(timeTd);
+        tr.appendChild(offsetTd);
+        tableBody.appendChild(tr);
+      });
+    }
+
+    // Concise alliance chat text
+    function generateShareText(rows) {
+      if (!rows.length) {
+        shareTextEl.value = "Rally plan will appear here once data is loaded.";
+        return;
+      }
+
+      const lines = [];
+      lines.push("Whale Rally Timing");
+
+      rows.forEach((row, index) => {
+        const name = row.PlayerName || "-";
+        const offsetNum = Number(row.OffsetVsFirstSec) || 0;
+
+        if (index === 0 || offsetNum === 0) {
+          lines.push(`${name} – call first`);
+        } else {
+          lines.push(`${name} – call after ${offsetNum}s`);
+        }
+      });
+
+      shareTextEl.value = lines.join("\n");
+    }
+
+    // Pet ticker logic
+    function updateTicker() {
+      if (!petSchedule.length) {
+        tickerTextEl.textContent = "No pet schedule data. Check the Pets tab in the sheet.";
+        return;
+      }
+
+      const now = new Date();
+      const upcoming = [];
+      const expiring = [];
+      const expired = [];
+
+      petSchedule.forEach(p => {
+        const name = p.WhaleName || p.PlayerName || p.Name || "-";
+        const start = p.PetStartUTC ? new Date(p.PetStartUTC) : null;
+        const end = p.PetEndUTC ? new Date(p.PetEndUTC) : null;
+
+        if (!name || !start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
+          return;
+        }
+
+        const msToStart = start - now;
+        const msToEnd = end - now;
+
+        const minToStart = msToStart / 60000;
+        const minToEnd = msToEnd / 60000;
+
+        // Pets about to activate (0–5 min)
+        if (minToStart > 0 && minToStart <= 5) {
+          upcoming.push({ name, mins: minToStart });
+        }
+        // Pets active and about to expire (0–5 min left)
+        else if (msToStart <= 0 && msToEnd > 0 && minToEnd <= 5) {
+          expiring.push({ name, mins: minToEnd });
+        }
+        // Pets expired in last 5 min
+        else if (msToEnd <= 0 && msToEnd >= -5 * 60000) {
+          expired.push({ name, mins: -minToEnd });
+        }
+      });
+
+      function fmtMins(x) {
+        if (x <= 0.5) {
+          const sec = Math.max(5, Math.round(x * 60));
+          return `${sec}s`;
+        }
+        return `${Math.round(x)}m`;
+      }
+
+      const messages = [];
+
+      if (expiring.length) {
+        expiring.slice(0, 3).forEach(e =>
+          messages.push(`${e.name} pets expire in ${fmtMins(e.mins)}`)
+        );
+      } else if (expired.length) {
+        expired.slice(0, 3).forEach(e =>
+          messages.push(`${e.name} pets expired – update march times!`)
+        );
+      } else if (upcoming.length) {
+        upcoming.slice(0, 3).forEach(u =>
+          messages.push(`${u.name} pets activate in ${fmtMins(u.mins)}`)
+        );
+      }
+
+      if (!messages.length) {
+        tickerTextEl.textContent = "No pet changes in the next 5 minutes.";
+      } else {
+        tickerTextEl.textContent = messages.join(" • ");
+      }
+    }
+
+    function startAutoRefresh() {
+      stopAutoRefresh();
+      const seconds = Number(refreshIntervalSelect.value) || 10;
+      refreshTimer = setInterval(fetchData, seconds * 1000);
+    }
+
+    function stopAutoRefresh() {
+      if (refreshTimer) {
+        clearInterval(refreshTimer);
+        refreshTimer = null;
+      }
+    }
+
+    async function copyShareText() {
+      const text = shareTextEl.value || "";
+      if (!text.trim()) return;
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          shareTextEl.select();
+          document.execCommand("copy");
+        }
+        statusEl.textContent = "Rally plan copied to clipboard.";
+        statusEl.classList.remove("error");
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "Could not copy text. Please select and copy manually.";
+        statusEl.classList.add("error");
+      }
+    }
+
+    refreshBtn.addEventListener("click", fetchData);
+    autoRefreshToggle.addEventListener("change", () => {
+      if (autoRefreshToggle.checked) {
+        startAutoRefresh();
+      } else {
+        stopAutoRefresh();
+      }
+    });
+    refreshIntervalSelect.addEventListener("change", () => {
+      if (autoRefreshToggle.checked) startAutoRefresh();
+    });
+    copyBtn.addEventListener("click", copyShareText);
+
+    // Also refresh ticker every 10s using current petSchedule + current time
+    setInterval(updateTicker, 10000);
+
+    // Initial load
+    fetchData();
+    startAutoRefresh();
+  </script>
+</body>
+</html>
