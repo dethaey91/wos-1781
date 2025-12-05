@@ -42,6 +42,13 @@ body {
   box-shadow: 0 30px 80px rgba(0,0,0,0.65);
 }
 
+/* Header & title */
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
 h1 {
   font-size: 1.9rem;
   margin: 0;
@@ -49,7 +56,6 @@ h1 {
   letter-spacing: 0.05em;
   margin-bottom: 0.3rem;
 }
-
 .badge {
   font-size: 0.75rem;
   border: 1px solid var(--accent-blue);
@@ -59,11 +65,32 @@ h1 {
   margin-left: 0.5rem;
   text-transform: uppercase;
 }
-
 .subtitle {
   color: var(--sub);
-  margin-bottom: 1rem;
+  margin-top: 0.1rem;
   font-size: 0.9rem;
+}
+
+/* Language toggle */
+.lang-toggle {
+  display: flex;
+  gap: 0.4rem;
+}
+.lang-btn {
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: rgba(15,23,42,0.9);
+  color: var(--sub);
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.lang-btn.active {
+  border-color: var(--accent-blue);
+  color: #e5e7eb;
+  background: rgba(59,130,246,0.45);
 }
 
 /* Layout */
@@ -78,10 +105,11 @@ h1 {
   }
 }
 
-/* Big UTC clock – box fits content */
+/* Big UTC clock */
 .clock-row {
   display: flex;
   justify-content: flex-end;
+  margin-top: 0.75rem;
 }
 .clock-panel {
   display: inline-flex;
@@ -249,15 +277,12 @@ th, td {
   border-color: var(--accent-red);
   color: #fecaca;
 }
-.pet-badge--expired { /* NEW: expired (distinct from no data) */
+.pet-badge--expired {
   background: rgba(30,64,175,0.35);
   border-color: var(--accent-red);
   color: #fecaca;
 }
-.pet-badge--off {
-  background: rgba(15,23,42,0.8);
-  color: var(--sub);
-}
+.pet-badge--off,
 .pet-badge--none {
   background: rgba(15,23,42,0.8);
   color: var(--sub);
@@ -293,13 +318,11 @@ textarea {
   font-size: 0.85rem;
   resize: vertical;
 }
-
-  #shareText {
+#shareText {
   box-sizing: border-box;
-  width: 100%;   /* now 100% including padding + border */
 }
 
-/* Buttons – restored hover animation */
+/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -331,37 +354,49 @@ textarea {
 
 <body>
 <div class="app">
-  <h1>
-    Whiteout Survival – Battle Dashboard
-    <span class="badge">Rallies & Pets</span>
-  </h1>
-  <div class="subtitle">Left: Rally sync. Right: our pets & enemy pets.</div>
+  <div class="header-row">
+    <div>
+      <h1 id="titleText">
+        Whiteout Survival – Battle Dashboard
+        <span class="badge" id="badgeText">Rallies & Pets</span>
+      </h1>
+      <div class="subtitle" id="subtitleText">
+        Left: Rally sync. Right: our pets & enemy pets.
+      </div>
+    </div>
+    <div class="lang-toggle" id="langToggle">
+      <button type="button" class="lang-btn active" data-lang="en">EN</button>
+      <button type="button" class="lang-btn" data-lang="pt">PT</button>
+    </div>
+  </div>
 
   <div class="clock-row">
     <div class="clock-panel">
-      <div class="clock-label">Battle Time (UTC)</div>
+      <div class="clock-label" id="battleTimeLabel">Battle Time (UTC)</div>
       <div class="clock-time" id="utcClock">--:--:--</div>
     </div>
   </div>
 
   <div class="ticker ticker--idle" id="ticker">
-    <span class="ticker-label">Pet Alert</span>
+    <span class="ticker-label" id="tickerLabel">Pet Alert</span>
     <span id="tickerText">Loading…</span>
   </div>
 
   <div class="columns">
     <!-- LEFT: RALLY CARD -->
     <div class="card">
-      <div class="card-title">Rally Timing</div>
-      <div class="card-subtitle">Based on march times from Plan sheet.</div>
+      <div class="card-title" id="rallyCardTitle">Rally Timing</div>
+      <div class="card-subtitle" id="rallyCardSubtitle">
+        Based on march times from Plan sheet.
+      </div>
 
       <table class="rally-table">
         <thead>
           <tr>
-            <th>Order</th>
-            <th>Player</th>
-            <th>March (s)</th>
-            <th>Offset</th>
+            <th id="hdrRallyOrder">Order</th>
+            <th id="hdrRallyPlayer">Player</th>
+            <th id="hdrRallyMarch">March (s)</th>
+            <th id="hdrRallyOffset">Offset</th>
           </tr>
         </thead>
         <tbody id="rallyTableBody">
@@ -371,7 +406,7 @@ textarea {
 
       <div class="chat-block">
         <div class="chat-header">
-          <div class="chat-title">Alliance Chat Message</div>
+          <div class="chat-title" id="chatTitle">Alliance Chat Message</div>
           <button id="copyBtn" class="btn secondary" type="button">📋 Copy</button>
         </div>
         <textarea id="shareText" readonly>Loading…</textarea>
@@ -381,15 +416,17 @@ textarea {
     <!-- RIGHT: OUR + ENEMY PETS -->
     <div class="right-stack">
       <div class="card">
-        <div class="card-title">Our Pets – All Whales</div>
-        <div class="card-subtitle">From Pets tab (start & end).</div>
+        <div class="card-title" id="ourPetsTitle">Our Pets – All Whales</div>
+        <div class="card-subtitle" id="ourPetsSubtitle">
+          From Pets tab (start & end).
+        </div>
 
         <table class="pets-table">
           <thead>
             <tr>
-              <th>Whale</th>
-              <th>Window</th>
-              <th>Status</th>
+              <th id="hdrPetWhale1">Whale</th>
+              <th id="hdrPetWindow1">Window</th>
+              <th id="hdrPetStatus1">Status</th>
             </tr>
           </thead>
           <tbody id="petsTableBody">
@@ -399,15 +436,17 @@ textarea {
       </div>
 
       <div class="card">
-        <div class="card-title">Enemy Pets – Opponent Whales</div>
-        <div class="card-subtitle">From EnemyPets tab. Start time only, dashboard assumes 2h duration.</div>
+        <div class="card-title" id="enemyPetsTitle">Enemy Pets – Opponent Whales</div>
+        <div class="card-subtitle" id="enemyPetsSubtitle">
+          From EnemyPets tab. Start time only, dashboard assumes 2h duration.
+        </div>
 
         <table class="pets-table">
           <thead>
             <tr>
-              <th>Whale</th>
-              <th>Window</th>
-              <th>Status</th>
+              <th id="hdrPetWhale2">Whale</th>
+              <th id="hdrPetWindow2">Window</th>
+              <th id="hdrPetStatus2">Status</th>
             </tr>
           </thead>
           <tbody id="enemyPetsTableBody">
@@ -422,13 +461,89 @@ textarea {
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbyxyAZJahC4ouheWWMKt0KZ7fFW3PPkeTndnu3HSyuIyFZfIakN294TeC9nANU8Y5j-/exec";
 
+/* ========= I18N STRINGS ========= */
+const I18N = {
+  en: {
+    title: "Whiteout Survival – Battle Dashboard",
+    badge: "Rallies & Pets",
+    subtitle: "Left: Rally sync. Right: our pets & enemy pets.",
+    battleTimeLabel: "Battle Time (UTC)",
+    tickerLabel: "Pet Alert",
+    tickerIdle: "No pet changes in the next 15 minutes.",
+    tickerExpiring: names => `${names} pets <5m left`,
+    tickerExpired: names => `${names} pets EXPIRED – update marches!`,
+    tickerUpcoming: names => `${names} pets activate soon`,
+    rallyCardTitle: "Rally Timing",
+    rallyCardSubtitle: "Based on march times from Plan sheet.",
+    ourPetsTitle: "Our Pets – All Whales",
+    ourPetsSubtitle: "From Pets tab (start & end).",
+    enemyPetsTitle: "Enemy Pets – Opponent Whales",
+    enemyPetsSubtitle: "From EnemyPets tab. Start time only, dashboard assumes 2h duration.",
+    chatTitle: "Alliance Chat Message",
+    chatHeader: "ATTENTION - WHALE RALLY TIMINGS",
+    chatLineFirst: name => `${name} – call first`,
+    chatLineOther: (name, offset) => `${name} – call after ${offset}s`,
+    tableRallyOrder: "Order",
+    tableRallyPlayer: "Player",
+    tableRallyMarch: "March (s)",
+    tableRallyOffset: "Offset",
+    tablePetWhale: "Whale",
+    tablePetWindow: "Window",
+    tablePetStatus: "Status",
+    statusNoPet: "No pet",
+    statusNoData: "No data",
+    statusExpired: "Expired",
+    statusStartsIn: mins => `Starts in ${mins}`,
+    statusNotUsedYet: mins => `Not used yet (${mins} to start)`,
+    statusActiveLeft: mins => `Active (${mins} left)`,
+    copyButton: "📋 Copy"
+  },
+  pt: {
+    title: "Whiteout Survival – Painel de Batalha",
+    badge: "Rallies & Pets",
+    subtitle: "Esquerda: sincronização de rallies. Direita: nossos pets e pets do inimigo.",
+    battleTimeLabel: "Hora de Batalha (UTC)",
+    tickerLabel: "Alerta de Pets",
+    tickerIdle: "Sem mudanças de pets nos próximos 15 minutos.",
+    tickerExpiring: names => `Pets de ${names} terminam em <5m`,
+    tickerExpired: names => `Pets de ${names} EXPIRARAM – ajustem as marchas!`,
+    tickerUpcoming: names => `Pets de ${names} serão ativados em breve`,
+    rallyCardTitle: "Tempo de Rally",
+    rallyCardSubtitle: "Com base nos tempos de marcha da aba Plan.",
+    ourPetsTitle: "Nossos Pets – Todas as Baleias",
+    ourPetsSubtitle: "Da aba Pets (início e fim).",
+    enemyPetsTitle: "Pets do Inimigo – Baleias Adversárias",
+    enemyPetsSubtitle: "Da aba EnemyPets. Só horário de início, duração de 2h.",
+    chatTitle: "Mensagem para o Chat da Aliança",
+    chatHeader: "ATENÇÃO - HORÁRIOS DE RALLY DAS BALEIAS",
+    chatLineFirst: name => `${name} – chamar primeiro`,
+    chatLineOther: (name, offset) => `${name} – chamar depois de ${offset}s`,
+    tableRallyOrder: "Ordem",
+    tableRallyPlayer: "Jogador",
+    tableRallyMarch: "Marcha (s)",
+    tableRallyOffset: "Atraso",
+    tablePetWhale: "Baleia",
+    tablePetWindow: "Janela",
+    tablePetStatus: "Status",
+    statusNoPet: "Sem pet",
+    statusNoData: "Sem dados",
+    statusExpired: "Expirado",
+    statusStartsIn: mins => `Começa em ${mins}`,
+    statusNotUsedYet: mins => `Ainda não usado (${mins} para começar)`,
+    statusActiveLeft: mins => `Ativo (${mins} restantes)`,
+    copyButton: "📋 Copiar"
+  }
+};
+
+let currentLang = "en";
+
 let planRows = [];
 let petSchedule = [];
 let enemySchedule = [];
 let serverOffsetMs = 0;
 let serverRefDate = null;
 
-/* CLOCK – server synced, no extra 1s offset anymore */
+/* ========= CLOCK ========= */
 function updateClock() {
   const now = new Date(Date.now() + serverOffsetMs);
   document.getElementById("utcClock").textContent =
@@ -436,37 +551,39 @@ function updateClock() {
 }
 setInterval(updateClock, 1000);
 
-/* Helpers */
+/* ========= HELPERS ========= */
 function minutesText(min) {
   return min <= 1 ? Math.round(min*60) + "s" : Math.round(min) + "m";
 }
 
-/* Our pet status */
+/* ========= PET STATUS (OUR) ========= */
 function petStatus(p) {
+  const t = I18N[currentLang];
   const now = new Date(Date.now() + serverOffsetMs);
   const s = new Date(p.PetStartUTC);
   const e = new Date(p.PetEndUTC);
-  if (!s || !e || isNaN(s) || isNaN(e)) return {label:"No pet", type:"none"};
+  if (!s || !e || isNaN(s) || isNaN(e))
+    return {label: t.statusNoPet, type:"none"};
 
   const mStart = (s - now)/60000;
   const mEnd   = (e - now)/60000;
 
-  if (mEnd <= 0) return {label:"Expired", type:"expired"};
+  if (mEnd <= 0) return {label: t.statusExpired, type:"expired"};
 
   if (mStart > 0) {
     return {
-      label: "Starts in " + minutesText(mStart),
+      label: t.statusStartsIn(minutesText(mStart)),
       type: mStart <= 5 ? "soon" : "upcoming"
     };
   }
 
-  if (mEnd < 5)  return { label:`Active (${minutesText(mEnd)} left)`, type:"critical" };
-  if (mEnd < 15) return { label:`Active (${minutesText(mEnd)} left)`, type:"soon" };
+  if (mEnd < 5)  return { label: t.statusActiveLeft(minutesText(mEnd)), type:"critical" };
+  if (mEnd < 15) return { label: t.statusActiveLeft(minutesText(mEnd)), type:"soon" };
 
-  return { label:`Active (${minutesText(mEnd)} left)`, type:"active" };
+  return { label: t.statusActiveLeft(minutesText(mEnd)), type:"active" };
 }
 
-/* Enemy window from time-of-day + 2h duration */
+/* ========= ENEMY WINDOWS ========= */
 function buildEnemyWindow(p) {
   if (!serverRefDate || !p.PetStartUTC) return null;
   const raw = new Date(p.PetStartUTC);
@@ -481,29 +598,30 @@ function buildEnemyWindow(p) {
 }
 
 function enemyPetStatus(p) {
+  const t = I18N[currentLang];
   const window = buildEnemyWindow(p);
-  if (!window) return {label:"No data", type:"none"};
+  if (!window) return {label:t.statusNoData, type:"none"};
 
   const now = new Date(Date.now() + serverOffsetMs);
   const mStart = (window.start - now)/60000;
   const mEnd   = (window.end   - now)/60000;
 
-  if (mEnd <= 0) return {label:"Expired", type:"expired"};
+  if (mEnd <= 0) return {label:t.statusExpired, type:"expired"};
 
   if (mStart > 0) {
     return {
-      label: "Not used yet (" + minutesText(mStart) + " to start)",
+      label: t.statusNotUsedYet(minutesText(mStart)),
       type: mStart <= 5 ? "soon" : "upcoming"
     };
   }
 
-  if (mEnd < 5)  return { label:`Active (${minutesText(mEnd)} left)`, type:"critical" };
-  if (mEnd < 15) return { label:`Active (${minutesText(mEnd)} left)`, type:"soon" };
+  if (mEnd < 5)  return { label: t.statusActiveLeft(minutesText(mEnd)), type:"critical" };
+  if (mEnd < 15) return { label: t.statusActiveLeft(minutesText(mEnd)), type:"soon" };
 
-  return { label:`Active (${minutesText(mEnd)} left)`, type:"active" };
+  return { label: t.statusActiveLeft(minutesText(mEnd)), type:"active" };
 }
 
-/* Render our pets */
+/* ========= RENDERERS ========= */
 function renderPets() {
   const tbody = document.getElementById("petsTableBody");
   tbody.innerHTML = "";
@@ -523,7 +641,6 @@ function renderPets() {
   });
 }
 
-/* Render enemy pets */
 function renderEnemyPets() {
   const tbody = document.getElementById("enemyPetsTableBody");
   tbody.innerHTML = "";
@@ -548,7 +665,6 @@ function renderEnemyPets() {
   });
 }
 
-/* Rally table */
 function renderRallies() {
   const tbody = document.getElementById("rallyTableBody");
   tbody.innerHTML = "";
@@ -564,8 +680,9 @@ function renderRallies() {
   });
 }
 
-/* Ticker (our pets only) */
+/* ========= TICKER ========= */
 function updateTicker() {
+  const t = I18N[currentLang];
   const now = new Date(Date.now() + serverOffsetMs);
   const ticker = document.getElementById("ticker");
   const text = document.getElementById("tickerText");
@@ -587,41 +704,92 @@ function updateTicker() {
   });
 
   if (expired.length) {
-    text.textContent = `${expired.join(", ")} pets EXPIRED – update marches!`;
+    text.textContent = t.tickerExpired(expired.join(", "));
     ticker.className = "ticker ticker--danger";
   }
   else if (expiring.length) {
-    text.textContent = `${expiring.join(", ")} pets <5m left`;
+    text.textContent = t.tickerExpiring(expiring.join(", "));
     ticker.className = "ticker ticker--danger";
   }
   else if (upcoming.length) {
-    text.textContent = `${upcoming.join(", ")} pets activate soon`;
+    text.textContent = t.tickerUpcoming(upcoming.join(", "));
     ticker.className = "ticker ticker--warning";
   }
   else {
-    text.textContent = "No pet changes in the next 15 minutes.";
+    text.textContent = t.tickerIdle;
     ticker.className = "ticker ticker--idle";
   }
 }
 
-/* Chat macro */
+/* ========= CHAT MACRO ========= */
 function generateChatText() {
-  let lines = ["ATTENTION - WHALE RALLY TIMINGS", ""];
+  const t = I18N[currentLang];
+  let lines = [t.chatHeader, ""];
 
   planRows.forEach((r,i) => {
-    if (i===0) lines.push(`${r.PlayerName} – call first`);
-    else lines.push(`${r.PlayerName} – call after ${r.OffsetVsFirstSec}s`);
+    if (i===0) lines.push(t.chatLineFirst(r.PlayerName));
+    else lines.push(t.chatLineOther(r.PlayerName, r.OffsetVsFirstSec));
   });
 
   document.getElementById("shareText").value = lines.join("\n");
 }
 
-/* Copy button */
+/* ========= STATIC TEXT TRANSLATION ========= */
+function applyStaticTranslations() {
+  const t = I18N[currentLang];
+
+  const titleEl = document.getElementById("titleText");
+  titleEl.childNodes[0].textContent = t.title + " ";
+  document.getElementById("badgeText").textContent = t.badge;
+  document.getElementById("subtitleText").textContent = t.subtitle;
+
+  document.getElementById("battleTimeLabel").textContent = t.battleTimeLabel;
+  document.getElementById("tickerLabel").textContent = t.tickerLabel;
+
+  document.getElementById("rallyCardTitle").textContent = t.rallyCardTitle;
+  document.getElementById("rallyCardSubtitle").textContent = t.rallyCardSubtitle;
+  document.getElementById("ourPetsTitle").textContent = t.ourPetsTitle;
+  document.getElementById("ourPetsSubtitle").textContent = t.ourPetsSubtitle;
+  document.getElementById("enemyPetsTitle").textContent = t.enemyPetsTitle;
+  document.getElementById("enemyPetsSubtitle").textContent = t.enemyPetsSubtitle;
+  document.getElementById("chatTitle").textContent = t.chatTitle;
+  document.getElementById("copyBtn").textContent = t.copyButton;
+
+  document.getElementById("hdrRallyOrder").textContent  = t.tableRallyOrder;
+  document.getElementById("hdrRallyPlayer").textContent = t.tableRallyPlayer;
+  document.getElementById("hdrRallyMarch").textContent  = t.tableRallyMarch;
+  document.getElementById("hdrRallyOffset").textContent = t.tableRallyOffset;
+
+  document.getElementById("hdrPetWhale1").textContent  = t.tablePetWhale;
+  document.getElementById("hdrPetWindow1").textContent = t.tablePetWindow;
+  document.getElementById("hdrPetStatus1").textContent = t.tablePetStatus;
+  document.getElementById("hdrPetWhale2").textContent  = t.tablePetWhale;
+  document.getElementById("hdrPetWindow2").textContent = t.tablePetWindow;
+  document.getElementById("hdrPetStatus2").textContent = t.tablePetStatus;
+}
+
+/* ========= COPY BUTTON ========= */
 document.getElementById("copyBtn").onclick = () => {
   navigator.clipboard.writeText(document.getElementById("shareText").value);
 };
 
-/* Fetch data */
+/* ========= LANGUAGE TOGGLE ========= */
+document.getElementById("langToggle").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-lang]");
+  if (!btn) return;
+  currentLang = btn.getAttribute("data-lang") || "en";
+
+  document.querySelectorAll("#langToggle .lang-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+
+  applyStaticTranslations();
+  generateChatText();
+  renderPets();
+  renderEnemyPets();
+  updateTicker();
+});
+
+/* ========= FETCH DATA ========= */
 async function fetchData() {
   const res = await fetch(API_URL + "?t=" + Date.now());
   const data = await res.json();
@@ -645,10 +813,10 @@ async function fetchData() {
   updateClock();
 }
 
-/* Refresh loop */
+/* ========= INIT ========= */
+applyStaticTranslations();
 setInterval(fetchData, 10000);
 fetchData();
 </script>
 </body>
 </html>
-
