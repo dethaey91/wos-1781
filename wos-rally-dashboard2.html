@@ -65,7 +65,7 @@ h1 {
   font-size: 0.9rem;
 }
 
-/* Layout for 2 columns */
+/* Layout */
 .columns {
   display: grid;
   grid-template-columns: 1.8fr 1.2fr;
@@ -89,7 +89,6 @@ h1 {
   margin-bottom: 1rem;
   box-shadow: 0 18px 40px rgba(15,23,42,0.9);
 }
-
 .clock-label {
   font-size: 1rem;
   text-transform: uppercase;
@@ -97,7 +96,6 @@ h1 {
   margin-bottom: 0.35rem;
   color: #a5b4fc;
 }
-
 .clock-time {
   font-family: ui-monospace, monospace;
   font-size: 3.4rem;
@@ -107,7 +105,7 @@ h1 {
   text-shadow: 0 0 18px rgba(148,197,255,0.6);
 }
 
-/* Card styling */
+/* Cards */
 .card {
   background: var(--panel);
   border-radius: 1rem;
@@ -115,16 +113,50 @@ h1 {
   padding: 1rem;
   box-shadow: 0 18px 40px rgba(15,23,42,0.9);
 }
-
-/* Headings in card */
 .card-title {
   font-size: 1rem;
   text-transform: uppercase;
   font-weight: 600;
   letter-spacing: 0.08em;
+  margin-bottom: 0.2rem;
+}
+.card-subtitle {
+  font-size: 0.8rem;
+  color: var(--sub);
 }
 
-/* Table */
+/* Stack for right column (our + enemy pets) */
+.right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Ticker */
+.ticker {
+  margin: 0.6rem 0 1.3rem;
+  padding: 0.7rem 1.1rem;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 1px solid var(--accent-blue);
+  background: rgba(15,23,42,0.95);
+  box-shadow: 0 14px 34px rgba(0,0,0,0.6);
+}
+.ticker-label {
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(15,23,42,1);
+}
+.ticker--idle { border-color: var(--accent-blue); }
+.ticker--warning { border-color: var(--accent-yellow); box-shadow: 0 0 20px rgba(250,204,21,0.6); }
+.ticker--danger { border-color: var(--accent-red); box-shadow: 0 0 25px rgba(248,113,113,0.7); }
+
+/* Tables */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -134,16 +166,14 @@ table {
   overflow: hidden;
   font-size: 0.85rem;
 }
-
 thead {
   background: rgba(15,23,42,0.98);
 }
-
 th, td {
   padding: 0.5rem 0.6rem;
 }
 
-/* Alignment fixes */
+/* Rally alignment */
 .rally-table th:nth-child(1),
 .rally-table td:nth-child(1),
 .rally-table th:nth-child(2),
@@ -157,6 +187,7 @@ th, td {
   text-align: right;
 }
 
+/* Pets alignment */
 .pets-table th:nth-child(1),
 .pets-table td:nth-child(1) {
   text-align: left;
@@ -191,25 +222,24 @@ th, td {
   color: #bbf7d0;
 }
 
-/* Pet badges */
+/* Pet badges (shared for both our + enemy) */
 .pet-badge {
   padding: 0.15rem 0.55rem;
   border-radius: 0.8rem;
   font-size: 0.8rem;
   border: 1px solid var(--border);
 }
-
 .pet-badge--active {
   background: rgba(22,163,74,0.22);
   border-color: var(--accent-green);
   color: #bbf7d0;
 }
-.pet-badge--soon { /* <15m */
+.pet-badge--soon {  /* <15m remaining */
   background: rgba(234,179,8,0.18);
   border-color: var(--accent-yellow);
   color: #facc15;
 }
-.pet-badge--critical { /* <5m */
+.pet-badge--critical { /* <5m remaining */
   background: rgba(248,113,113,0.18);
   border-color: var(--accent-red);
   color: #fecaca;
@@ -222,33 +252,7 @@ th, td {
   color: var(--sub);
 }
 
-/* Ticker */
-.ticker {
-  margin: 0.6rem 0 1.3rem;
-  padding: 0.7rem 1.1rem;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border: 1px solid var(--accent-blue);
-  background: rgba(15,23,42,0.95);
-  box-shadow: 0 14px 34px rgba(0,0,0,0.6);
-}
-
-.ticker-label {
-  padding: 0.25rem 0.7rem;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(15,23,42,1);
-}
-
-.ticker--idle { border-color: var(--accent-blue); }
-.ticker--warning { border-color: var(--accent-yellow); box-shadow: 0 0 20px rgba(250,204,21,0.6); }
-.ticker--danger { border-color: var(--accent-red); box-shadow: 0 0 25px rgba(248,113,113,0.7); }
-
-/* Chat box */
+/* Chat textarea */
 textarea {
   width: 100%;
   min-height: 120px;
@@ -276,41 +280,41 @@ textarea {
   background: rgba(15,23,42,0.85);
   border-color: var(--border);
 }
-
 </style>
 </head>
 
 <body>
 <div class="app">
-
   <h1>Whiteout Survival – Battle Dashboard <span class="badge">Rallies & Pets</span></h1>
-  <div class="subtitle">Left: Rally sync. Right: Full pet status for all whales.</div>
+  <div class="subtitle">Left: Rally sync. Right: Our pets & enemy pets.</div>
 
-  <!-- Big UTC Clock -->
+  <!-- Big UTC clock -->
   <div class="clock-panel">
     <div class="clock-label">Battle Time (UTC)</div>
     <div class="clock-time" id="utcClock">--:--:--</div>
   </div>
 
-  <!-- Pet Ticker -->
+  <!-- Pet ticker (our pets only) -->
   <div class="ticker ticker--idle" id="ticker">
     <span class="ticker-label">Pet Alert</span>
     <span id="tickerText">Loading…</span>
   </div>
 
   <div class="columns">
-
     <!-- LEFT: RALLIES -->
     <div class="card">
       <div class="card-title">Rally Timing</div>
+      <div class="card-subtitle">Based on march times from Plan sheet.</div>
 
       <table class="rally-table">
-        <thead><tr>
-          <th>Order</th>
-          <th>Player</th>
-          <th>March</th>
-          <th>Offset</th>
-        </tr></thead>
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Player</th>
+            <th>March (s)</th>
+            <th>Offset</th>
+          </tr>
+        </thead>
         <tbody id="rallyTableBody">
           <tr><td colspan="4">Loading…</td></tr>
         </tbody>
@@ -318,82 +322,184 @@ textarea {
 
       <h3 style="margin-top:1rem; font-size:1rem;">Alliance Chat Message</h3>
       <button id="copyBtn" class="btn secondary" style="float:right; margin-bottom:0.4rem;">📋 Copy</button>
-
       <textarea id="shareText" readonly>Loading…</textarea>
     </div>
 
-    <!-- RIGHT: PETS -->
-    <div class="card">
-      <div class="card-title">Pet Status – All Whales</div>
+    <!-- RIGHT: PETS (ours + enemy) -->
+    <div class="right-stack">
+      <div class="card">
+        <div class="card-title">Our Pets – All Whales</div>
+        <div class="card-subtitle">From Pets tab (start & end).</div>
 
-      <table class="pets-table">
-        <thead><tr>
-          <th>Whale</th>
-          <th>Window</th>
-          <th>Status</th>
-        </tr></thead>
+        <table class="pets-table">
+          <thead>
+            <tr>
+              <th>Whale</th>
+              <th>Window</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="petsTableBody">
+            <tr><td colspan="3">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
 
-        <tbody id="petsTableBody">
-          <tr><td colspan="3">Loading…</td></tr>
-        </tbody>
-      </table>
+      <div class="card">
+        <div class="card-title">Enemy Pets – Opponent Whales</div>
+        <div class="card-subtitle">From EnemyPets tab. Start time only; dashboard assumes 2h duration.</div>
+
+        <table class="pets-table">
+          <thead>
+            <tr>
+              <th>Whale</th>
+              <th>Window</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="enemyPetsTableBody">
+            <tr><td colspan="3">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-
-  </div><!-- end columns -->
-</div><!-- end app -->
-
+  </div>
+</div>
 
 <script>
-/* ==============================
-   CONFIG
-============================== */
 const API_URL = "https://script.google.com/macros/s/AKfycbyxyAZJahC4ouheWWMKt0KZ7fFW3PPkeTndnu3HSyuIyFZfIakN294TeC9nANU8Y5j-/exec";
 
-/* ==============================
-   GLOBALS
-============================== */
 let planRows = [];
 let petSchedule = [];
+let enemySchedule = [];
 let serverOffsetMs = 0;
+let serverRefDate = null;
 
-/* ==============================
-   CLOCK – SERVER SYNCED
-============================== */
+/* CLOCK (server-synced, -1s WoS tweak) */
 function updateClock() {
-  const now = new Date(Date.now() + serverOffsetMs - 1000); // still apply WoS -1s correction
+  const now = new Date(Date.now() + serverOffsetMs - 1000);
   document.getElementById("utcClock").textContent =
     now.toISOString().substring(11,19);
 }
 setInterval(updateClock, 1000);
 
-/* ==============================
-   FETCH DATA
-============================== */
-async function fetchData() {
-  const res = await fetch(API_URL + "?t=" + Date.now());
-  const data = await res.json();
-
-  // Server time sync
-  if (data.updated) {
-    const server = new Date(data.updated).getTime();
-    const local = Date.now();
-    serverOffsetMs = server - local;
-  }
-
-  planRows = data.plan || data.rows || [];
-  petSchedule = data.pets || [];
-
-  renderRallies();
-  renderPets();
-  updateTicker();
-  generateChatText();
-
-  updateClock();
+/* Helpers */
+function minutesText(min) {
+  return min <= 1 ? Math.round(min*60) + "s" : Math.round(min) + "m";
 }
 
-/* ==============================
-   RENDER RALLY TABLE
-============================== */
+/* Our pet status (full start+end from sheet) */
+function petStatus(p) {
+  const now = new Date(Date.now() + serverOffsetMs);
+  const s = new Date(p.PetStartUTC);
+  const e = new Date(p.PetEndUTC);
+  if (!s || !e || isNaN(s) || isNaN(e)) return {label:"No pet", type:"none"};
+
+  const mStart = (s - now)/60000;
+  const mEnd   = (e - now)/60000;
+
+  if (mEnd <= 0) return {label:"Expired", type:"off"};
+
+  if (mStart > 0) {
+    return {
+      label: "Starts in " + minutesText(mStart),
+      type: mStart <= 5 ? "soon" : "upcoming"
+    };
+  }
+
+  // Active thresholds: yellow <15m, red <5m
+  if (mEnd < 5)  return { label:`Active (${minutesText(mEnd)} left)`, type:"critical" };
+  if (mEnd < 15) return { label:`Active (${minutesText(mEnd)} left)`, type:"soon" };
+
+  return { label:`Active (${minutesText(mEnd)} left)`, type:"active" };
+}
+
+/* Enemy time-of-day -> full UTC window (2h duration) */
+function buildEnemyWindow(p) {
+  if (!serverRefDate || !p.PetStartUTC) return null;
+  const raw = new Date(p.PetStartUTC); // likely 1899 date + time
+  if (isNaN(raw)) return null;
+
+  const h = raw.getUTCHours();
+  const m = raw.getUTCMinutes();
+
+  const base = new Date(serverRefDate);
+  base.setUTCHours(h, m, 0, 0);       // start at battle day, UTC time
+  const end  = new Date(base.getTime() + 2 * 60 * 60 * 1000); // +2h
+
+  return { start: base, end: end };
+}
+
+function enemyPetStatus(p) {
+  const window = buildEnemyWindow(p);
+  if (!window) return {label:"No data", type:"none"};
+
+  const now = new Date(Date.now() + serverOffsetMs);
+  const mStart = (window.start - now)/60000;
+  const mEnd   = (window.end   - now)/60000;
+
+  if (mEnd <= 0) return {label:"Expired", type:"off"};
+
+  if (mStart > 0) {
+    return {
+      label: "Not used yet (" + minutesText(mStart) + " to start)",
+      type: mStart <= 5 ? "soon" : "upcoming"
+    };
+  }
+
+  // Active, same thresholds
+  if (mEnd < 5)  return { label:`Active (${minutesText(mEnd)} left)`, type:"critical" };
+  if (mEnd < 15) return { label:`Active (${minutesText(mEnd)} left)`, type:"soon" };
+
+  return { label:`Active (${minutesText(mEnd)} left)`, type:"active" };
+}
+
+/* Render our pets table */
+function renderPets() {
+  const tbody = document.getElementById("petsTableBody");
+  tbody.innerHTML = "";
+
+  petSchedule.forEach(p => {
+    const name = p.WhaleName || p.PlayerName || "-";
+    const s = p.PetStartUTC ? new Date(p.PetStartUTC).toISOString().substring(11,16) : "-";
+    const e = p.PetEndUTC ? new Date(p.PetEndUTC).toISOString().substring(11,16) : "-";
+    const st = petStatus(p);
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${name}</td>
+        <td>${s} - ${e}</td>
+        <td><span class="pet-badge pet-badge--${st.type}">${st.label}</span></td>
+      </tr>`;
+  });
+}
+
+/* Render enemy pets table */
+function renderEnemyPets() {
+  const tbody = document.getElementById("enemyPetsTableBody");
+  tbody.innerHTML = "";
+
+  enemySchedule.forEach(p => {
+    const name = p.WhaleName || p.PlayerName || "-";
+    const win  = buildEnemyWindow(p);
+    let winText = "-";
+    if (win) {
+      const s = win.start.toISOString().substring(11,16);
+      const e = win.end.toISOString().substring(11,16);
+      winText = `${s} - ${e}`;
+    }
+    const st = enemyPetStatus(p);
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${name}</td>
+        <td>${winText}</td>
+        <td><span class="pet-badge pet-badge--${st.type}">${st.label}</span></td>
+      </tr>`;
+  });
+}
+
+/* Rally table */
 function renderRallies() {
   const tbody = document.getElementById("rallyTableBody");
   tbody.innerHTML = "";
@@ -409,67 +515,9 @@ function renderRallies() {
   });
 }
 
-/* ==============================
-   PET LOGIC
-============================== */
-function minutesText(min) {
-  return min <= 1 ? Math.round(min*60) + "s" : Math.round(min) + "m";
-}
-
-function petStatus(p) {
-  const now = new Date();
-  const s = new Date(p.PetStartUTC);
-  const e = new Date(p.PetEndUTC);
-
-  if (!s || !e || isNaN(s) || isNaN(e)) return {label:"No pet", type:"none"};
-
-  const mStart = (s - now)/60000;
-  const mEnd = (e - now)/60000;
-
-  if (mEnd <= 0) return {label:"Expired", type:"off"};
-
-  if (mStart > 0) {
-    return {
-      label: "Starts in " + minutesText(mStart),
-      type: mStart <= 5 ? "soon" : "upcoming"
-    };
-  }
-
-  // Active thresholds:
-  if (mEnd < 5)  return { label:`Active (${minutesText(mEnd)} left)`, type:"critical" };
-  if (mEnd < 15) return { label:`Active (${minutesText(mEnd)} left)`, type:"soon" };
-
-  return { label:`Active (${minutesText(mEnd)} left)`, type:"active" };
-}
-
-/* ==============================
-   RENDER PET TABLE
-============================== */
-function renderPets() {
-  const tbody = document.getElementById("petsTableBody");
-  tbody.innerHTML = "";
-
-  petSchedule.forEach(p => {
-    const name = p.WhaleName || p.PlayerName;
-    const s = new Date(p.PetStartUTC).toISOString().substring(11,16);
-    const e = new Date(p.PetEndUTC).toISOString().substring(11,16);
-
-    const st = petStatus(p);
-
-    tbody.innerHTML += `
-      <tr>
-        <td>${name}</td>
-        <td>${s} - ${e}</td>
-        <td><span class="pet-badge pet-badge--${st.type}">${st.label}</span></td>
-      </tr>`;
-  });
-}
-
-/* ==============================
-   TICKER
-============================== */
+/* Ticker (our pets only) */
 function updateTicker() {
-  const now = new Date();
+  const now = new Date(Date.now() + serverOffsetMs);
   const ticker = document.getElementById("ticker");
   const text = document.getElementById("tickerText");
 
@@ -478,9 +526,11 @@ function updateTicker() {
   petSchedule.forEach(p => {
     const s = new Date(p.PetStartUTC);
     const e = new Date(p.PetEndUTC);
+    if (!s || !e || isNaN(s) || isNaN(e)) return;
+
     const mStart=(s-now)/60000;
     const mEnd=(e-now)/60000;
-    const name=p.WhaleName || p.PlayerName;
+    const name = p.WhaleName || p.PlayerName;
 
     if (mEnd<=0 && mEnd>-5) expired.push(name);
     else if (mEnd>0 && mEnd<5) expiring.push(name);
@@ -505,9 +555,7 @@ function updateTicker() {
   }
 }
 
-/* ==============================
-   RALLY CHAT MACRO
-============================== */
+/* Chat macro */
 function generateChatText() {
   let lines = ["ATTENTION - WHALE RALLY TIMINGS", ""];
 
@@ -524,13 +572,33 @@ document.getElementById("copyBtn").onclick = () => {
   navigator.clipboard.writeText(document.getElementById("shareText").value);
 };
 
-/* ==============================
-   REFRESH LOOP
-============================== */
+/* Fetch data */
+async function fetchData() {
+  const res = await fetch(API_URL + "?t=" + Date.now());
+  const data = await res.json();
+
+  if (data.updated) {
+    serverRefDate = new Date(data.updated);
+    const server = serverRefDate.getTime();
+    const local  = Date.now();
+    serverOffsetMs = server - local;
+  }
+
+  planRows      = data.plan      || data.rows || [];
+  petSchedule   = data.pets      || [];
+  enemySchedule = data.enemyPets || [];
+
+  renderRallies();
+  renderPets();
+  renderEnemyPets();
+  updateTicker();
+  generateChatText();
+  updateClock();
+}
+
+/* Refresh loop */
 setInterval(fetchData, 10000);
 fetchData();
-
 </script>
 </body>
 </html>
-
