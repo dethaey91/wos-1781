@@ -22,16 +22,19 @@
 .banner {
   width: 100%;
   max-width: 1250px;
-  margin: 0 auto 1.5rem auto;
-  border-radius: 1.2rem;
+  margin: 0 auto 1rem auto;
+  border-radius: 1rem;
   overflow: hidden;
   border: 1px solid rgba(148,163,184,0.35);
-  box-shadow: 0 12px 25px rgba(0,0,0,0.45);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.45);
+  height: 180px;                  /* Slim strip */
 }
 
 .banner img {
   width: 100%;
-  display: block;
+  height: 100%;
+  object-fit: cover;              /* Crops vertically */
+  object-position: center 30%;    /* Shows more castle + action */
 }
   
 /* Alliance color modes */
@@ -1583,6 +1586,7 @@ syncAllianceButtons();
 </script>
 </body>
 </html>
+
 
 
 
