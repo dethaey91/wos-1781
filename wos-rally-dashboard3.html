@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Whiteout Survival – Battle Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+:root {
+  --bg: #020617;
+  --panel: rgba(15,23,42,0.96);
+  --border: rgba(55,65,81,0.9);
+  --border-soft: rgba(148,163,184,0.45);
+  --text: #e5e7eb;
+  --sub: #9ca3af;
+  --accent-blue: rgba(96,165,250,0.95);
+  --accent-yellow: rgba(245,158,11,0.95);
+  --accent-red: rgba(248,113,113,0.95);
+  --accent-green: rgba(34,197,94,0.95);
+}
+
+/* Alliance color modes */
+.mode-vip {
+  --accent-blue: rgba(96,165,250,0.95);
+}
+.mode-hoe {
+  --accent-blue: rgba(248,113,113,0.95);
+}
+
+body {
+  margin: 0;
+  padding: 1.5rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+}
+
+/* Command center wrapper */
+.app {
+  position: relative;
+  width: 100%;
+  max-width: 1250px;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Background layers: grid + glow + noise */
+.app::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(148,163,184,0.08) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(148,163,184,0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: -3;
+}
+.app::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background:
+    radial-gradient(circle at top left, rgba(59,130,246,0.45), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(248,113,113,0.28), transparent 60%),
+    radial-gradient(circle at top right, rgba(56,189,248,0.25), transparent 60%);
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: -4;
+}
+
+/* Subtle noise overlay */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='4' stitchTiles='noStitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.18'/%3E%3C/svg%3E");
+}
+
+/* Error banner */
+.error-banner {
+  display: none;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.75rem;
+  background: rgba(185,28,28,0.12);
+  border: 1px solid rgba(248,113,113,0.9);
+  color: #fecaca;
+  font-size: 0.85rem;
+}
+
+/* Header & title */
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+h1 {
+  font-size: 1.9rem;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  margin-bottom: 0.3rem;
+}
+.badge {
+  font-size: 0.75rem;
+  border: 1px solid var(--accent-blue);
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(15,23,42,0.9);
+  margin-left: 0.5rem;
+  text-transform: uppercase;
+}
+.subtitle {
+  color: var(--sub);
+  margin-top: 0.1rem;
+  font-size: 0.9rem;
+}
+
+/* Language toggle */
+.lang-toggle {
+  display: flex;
+  gap: 0.4rem;
+}
+.lang-btn {
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: rgba(15,23,42,0.92);
+  color: var(--sub);
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.lang-btn.active {
+  border-color: var(--accent-blue);
+  color: #e5e7eb;
+  background: rgba(59,130,246,0.35);
+}
+
+/* Layout */
+.columns {
+  display: grid;
+  grid-template-columns: 1.8fr 1.2fr;
+  gap: 1.2rem;
+}
+@media (max-width: 900px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Big UTC clock */
+.clock-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 0.75rem;
+  gap: 1rem;
+}
+
+/* Clock panel with glow */
+.clock-panel {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 1.1rem 1.5rem 1.2rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(148,197,253,0.8);
+  background:
+    radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,0.9));
+  margin-bottom: 1rem;
+  box-shadow:
+    0 0 30px rgba(148,197,255,0.6),
+    0 18px 40px rgba(15,23,42,0.95);
+  overflow: hidden;
+}
+.clock-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(129,140,248,0.4), transparent 55%);
+  opacity: 0.25;
+  pointer-events: none;
+}
+.clock-panel::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: conic-gradient(
+    from 180deg,
+    rgba(59,130,246,0.35),
+    transparent,
+    rgba(96,165,250,0.45),
+    transparent,
+    rgba(56,189,248,0.25),
+    transparent,
+    rgba(59,130,246,0.45)
+  );
+  mix-blend-mode: screen;
+  opacity: 0.2;
+  animation: clockGlow 12s linear infinite;
+  pointer-events: none;
+}
+@keyframes clockGlow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.clock-label {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.35rem;
+  color: #a5b4fc;
+}
+.clock-time {
+  font-family: ui-monospace, monospace;
+  font-size: 3.6rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  color: #e5f2ff;
+  text-shadow:
+    0 0 18px rgba(148,197,255,0.8),
+    0 0 40px rgba(59,130,246,0.65);
+  z-index: 1;
+}
+
+/* Phase strip & progress bar */
+.phase-strip {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  z-index: 1;
+}
+.phase-label {
+  font-weight: 600;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,0.7);
+  background: rgba(15,23,42,0.96);
+}
+.phase-progress {
+  width: 180px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(15,23,42,0.9);
+  border: 1px solid rgba(148,163,184,0.6);
+  overflow: hidden;
+}
+.phase-progress-bar {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg,
+    rgba(59,130,246,0.2),
+    rgba(96,165,250,0.9),
+    rgba(56,189,248,0.8)
+  );
+  box-shadow: 0 0 12px rgba(96,165,250,0.75);
+}
+
+/* Sync & local time + refresh */
+.clock-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.sync-status {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,0.6);
+  background: rgba(15,23,42,0.9);
+  color: #9ca3af;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.sync-ok {
+  border-color: rgba(34,197,94,0.9);
+  color: #bbf7d0;
+}
+.sync-warn {
+  border-color: rgba(245,158,11,0.9);
+  color: #facc15;
+}
+.sync-bad {
+  border-color: rgba(248,113,113,0.9);
+  color: #fecaca;
+}
+.local-time {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+.refresh-row {
+  display: flex;
+  justify-content: flex-start;
+}
+.btn-refresh {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.7rem;
+}
+
+/* Frosted ticker */
+.ticker {
+  margin: 0.6rem 0 1.3rem;
+  padding: 0.7rem 1.1rem;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 1px solid rgba(148,163,184,0.65);
+  background: rgba(15,23,42,0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.75);
+}
+.ticker-label {
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: rgba(15,23,42,0.98);
+}
+.ticker--idle { border-color: var(--accent-blue); }
+.ticker--warning {
+  border-color: var(--accent-yellow);
+  box-shadow: 0 0 20px rgba(250,204,21,0.6);
+}
+.ticker--danger {
+  border-color: var(--accent-red);
+  box-shadow: 0 0 30px rgba(248,113,113,0.9);
+  animation: tickerPulse 1.2s ease-in-out infinite;
+}
+@keyframes tickerPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.01); }
+  100% { transform: scale(1); }
+}
+
+/* Cards: metal panel look */
+.card {
+  position: relative;
+  background: radial-gradient(circle at top left, rgba(31,41,55,0.9), rgba(15,23,42,0.98));
+  border-radius: 1rem;
+  border: 1px solid rgba(148,163,184,0.5);
+  padding: 1rem;
+  box-shadow:
+    0 18px 40px rgba(15,23,42,0.95),
+    inset 0 0 0 1px rgba(15,23,42,0.9);
+}
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(148,163,184,0.16), transparent 40%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 0.7rem;
+  border: 1px solid rgba(15,23,42,0.85);
+  pointer-events: none;
+}
+.card-title {
+  font-size: 1rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.2rem;
+}
+.card-subtitle {
+  font-size: 0.8rem;
+  color: var(--sub);
+}
+
+/* Right column stacking */
+.right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Animated divider (between sections) */
+.divider {
+  height: 2px;
+  margin: 0.4rem 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(148,163,184,0.9),
+    transparent
+  );
+  position: relative;
+  overflow: hidden;
+}
+.divider::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(96,165,250,0.95),
+    transparent
+  );
+  animation: dividerScan 3s linear infinite;
+}
+@keyframes dividerScan {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 0.7rem;
+  overflow: hidden;
+  font-size: 0.85rem;
+}
+thead {
+  background: radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,0.95));
+}
+th, td {
+  padding: 0.5rem 0.6rem;
+}
+
+/* Rally alignment */
+.rally-table th:nth-child(1),
+.rally-table td:nth-child(1),
+.rally-table th:nth-child(2),
+.rally-table td:nth-child(2) {
+  text-align: left;
+}
+.rally-table th:nth-child(3),
+.rally-table td:nth-child(3),
+.rally-table th:nth-child(4),
+.rally-table td:nth-child(4) {
+  text-align: right;
+}
+
+/* Pets alignment */
+.pets-table th:nth-child(1),
+.pets-table td:nth-child(1) {
+  text-align: left;
+}
+.pets-table th:nth-child(2),
+.pets-table td:nth-child(2),
+.pets-table th:nth-child(3),
+.pets-table td:nth-child(3) {
+  text-align: center;
+}
+
+/* Warning rows */
+.row-warning {
+  border-left: 3px solid rgba(248,113,113,0.9);
+  background: rgba(127,29,29,0.18);
+}
+
+/* Order bubble */
+.order-badge {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: radial-gradient(circle at top, rgba(15,23,42,0.95), rgba(15,23,42,0.9));
+  box-shadow: 0 0 8px rgba(15,23,42,0.9);
+}
+
+/* First tag with subtle pulse */
+.first-tag {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  margin-left: 0.35rem;
+  background: rgba(22,163,74,0.22);
+  border: 1px solid var(--accent-green);
+  color: #bbf7d0;
+  animation: firstPulse 1.8s ease-in-out infinite;
+}
+@keyframes firstPulse {
+  0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.7); }
+  100% { box-shadow: 0 0 0 10px rgba(34,197,94,0); }
+}
+
+/* Pet badges */
+.pet-badge {
+  padding: 0.15rem 0.55rem;
+  border-radius: 0.8rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--border-soft);
+}
+.pet-badge--active {
+  background: rgba(22,163,74,0.22);
+  border-color: var(--accent-green);
+  color: #bbf7d0;
+}
+.pet-badge--soon {
+  background: rgba(234,179,8,0.18);
+  border-color: var(--accent-yellow);
+  color: #facc15;
+}
+.pet-badge--critical {
+  background: rgba(248,113,113,0.18);
+  border-color: var(--accent-red);
+  color: #fecaca;
+}
+.pet-badge--expired {
+  background: rgba(30,64,175,0.35);
+  border-color: var(--accent-red);
+  color: #fecaca;
+}
+.pet-badge--off,
+.pet-badge--none {
+  background: rgba(15,23,42,0.8);
+  color: var(--sub);
+}
+
+/* Chat block area */
+.chat-block {
+  margin-top: 1rem;
+  padding: 0.75rem 0.85rem 0.9rem;
+  border-radius: 0.95rem;
+  border: 1px solid var(--border);
+  background: rgba(15,23,42,0.94);
+}
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.chat-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+textarea {
+  width: 100%;
+  min-height: 120px;
+  background: rgba(15,23,42,0.98);
+  border: 1px solid var(--border-soft);
+  border-radius: 0.7rem;
+  padding: 0.7rem;
+  color: var(--text);
+  font-size: 0.85rem;
+  resize: vertical;
+}
+#shareText {
+  box-sizing: border-box;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent-blue);
+  background: radial-gradient(circle at top left, rgba(59,130,246,0.45), rgba(15,23,42,0.98));
+  color: #e5e7eb;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.08s ease;
+}
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(37,99,235,0.7);
+}
+.btn:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 18px rgba(37,99,235,0.6);
+}
+.btn.secondary {
+  border-color: var(--border-soft);
+  background: radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,0.9));
+}
+
+/* Phase + Alliance selector row */
+.selector-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+/* Phase selector */
+#phaseSelector {
+  display: inline-flex;
+  gap: 0.4rem;
+}
+#phaseSelector .btn {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.8rem;
+}
+#phaseSelector .btn.active-phase {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 12px rgba(59,130,246,0.7);
+}
+#phaseSelector .btn.current-phase {
+  outline: 2px solid var(--accent-yellow);
+}
+
+/* Alliance selector */
+#allianceSelector {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+#allianceLabel {
+  font-size: 0.75rem;
+  color: var(--sub);
+}
+#allianceSelector .btn {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.7rem;
+}
+#allianceSelector .btn.active-alliance {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 12px rgba(59,130,246,0.8);
+}
+
+/* Enemy summary */
+.enemy-summary {
+  margin-top: 0.45rem;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+/* Legend */
+.legend {
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+.legend span {
+  margin-right: 0.6rem;
+}
+
+/* Copy toast */
+.copy-toast {
+  position: fixed;
+  right: 1.8rem;
+  top: 1.8rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(21,128,61,0.92);
+  color: #dcfce7;
+  font-size: 0.8rem;
+  border: 1px solid rgba(34,197,94,0.85);
+  box-shadow: 0 16px 35px rgba(22,163,74,0.8);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+  transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+  z-index: 50;
+}
+.copy-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+</style>
+</head>
+
+<body class="mode-vip">
+<div class="app">
+  <div id="errorBanner" class="error-banner">
+    ⚠️ Live data unavailable – using last known plan.
+  </div>
+
+  <div class="header-row">
+    <div>
+      <h1 id="titleText">
+        Whiteout Survival – Battle Dashboard
+        <span class="badge" id="badgeText">Rallies & Pets</span>
+      </h1>
+      <div class="subtitle" id="subtitleText">
+        Left: Rally sync (phases + alliance). Right: our pets & enemy pets.
+      </div>
+    </div>
+    <div class="lang-toggle" id="langToggle">
+      <button type="button" class="lang-btn active" data-lang="en">EN</button>
+      <button type="button" class="lang-btn" data-lang="pt">PT</button>
+    </div>
+  </div>
+
+  <div class="clock-row">
+    <div class="clock-panel">
+      <div class="clock-label" id="battleTimeLabel">Battle Time (UTC)</div>
+      <div class="clock-time" id="utcClock">--:--:--</div>
+      <div class="phase-strip">
+        <span id="phaseLabel" class="phase-label">Pre-battle</span>
+        <div class="phase-progress">
+          <div id="phaseProgressBar" class="phase-progress-bar"></div>
+        </div>
+      </div>
+    </div>
+    <div class="clock-meta">
+      <div id="syncStatus" class="sync-status">
+        Sync: --:--:-- UTC (–s ago)
+      </div>
+      <div id="localTime" class="local-time">
+        Your local time: --:--:--
+      </div>
+      <div class="refresh-row">
+        <button id="refreshBtn" class="btn secondary btn-refresh" type="button">⟳ Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ticker ticker--idle" id="ticker">
+    <span class="ticker-label" id="tickerLabel">Pet Alert</span>
+    <span id="tickerText">Loading…</span>
+  </div>
+
+  <div class="columns">
+    <!-- LEFT: RALLY CARD -->
+    <div class="card">
+      <div class="card-title" id="rallyCardTitle">Rally Timing</div>
+      <div class="card-subtitle" id="rallyCardSubtitle">
+        Based on march times from Plan sheet. VIP/HOE per phase from Roles tab.
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="selector-row">
+        <!-- Phase selector -->
+        <div id="phaseSelector">
+          <button type="button" class="btn secondary" data-phase="1">Phase 1</button>
+          <button type="button" class="btn secondary" data-phase="2">Phase 2</button>
+          <button type="button" class="btn secondary" data-phase="3">Phase 3</button>
+        </div>
+
+        <!-- Alliance selector -->
+        <div id="allianceSelector">
+          <span id="allianceLabel">Alliance</span>
+          <button type="button" class="btn secondary" data-ally="VIP">VIP</button>
+          <button type="button" class="btn secondary" data-ally="HOE">HOE</button>
+        </div>
+      </div>
+
+      <table class="rally-table">
+        <thead>
+          <tr>
+            <th id="hdrRallyOrder">Order</th>
+            <th id="hdrRallyPlayer">Player</th>
+            <th id="hdrRallyMarch">March (s)</th>
+            <th id="hdrRallyOffset">Offset</th>
+          </tr>
+        </thead>
+        <tbody id="rallyTableBody">
+          <tr><td colspan="4">Loading…</td></tr>
+        </tbody>
+      </table>
+
+      <div class="chat-block">
+        <div class="chat-header">
+          <div class="chat-title" id="chatTitle">Alliance Chat Message</div>
+          <button id="copyBtn" class="btn secondary" type="button">📋 Copy</button>
+        </div>
+        <textarea id="shareText" readonly>Loading…</textarea>
+      </div>
+    </div>
+
+    <!-- RIGHT: OUR + ENEMY PETS -->
+    <div class="right-stack">
+      <div class="card">
+        <div class="card-title" id="ourPetsTitle">Our Pets – All Whales</div>
+        <div class="card-subtitle" id="ourPetsSubtitle">
+          From Pets tab. Start time only, dashboard assumes 2h duration.
+        </div>
+
+        <div class="divider"></div>
+
+        <table class="pets-table">
+          <thead>
+            <tr>
+              <th id="hdrPetWhale1">Whale</th>
+              <th id="hdrPetWindow1">Window</th>
+              <th id="hdrPetStatus1">Status</th>
+            </tr>
+          </thead>
+          <tbody id="petsTableBody">
+            <tr><td colspan="3">Loading…</td></tr>
+          </tbody>
+        </table>
+        <div class="legend" id="ownLegend">
+          <span>🟢 active</span>
+          <span>🟡 &lt;15m</span>
+          <span>🔴 &lt;5m</span>
+          <span>🔵 expired</span>
+          <span>⚪ no pet</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" id="enemyPetsTitle">Enemy Pets – Opponent Whales</div>
+        <div class="card-subtitle" id="enemyPetsSubtitle">
+          From EnemyPets tab. Start time only, dashboard assumes 2h duration.
+        </div>
+
+        <div class="divider"></div>
+
+        <table class="pets-table">
+          <thead>
+            <tr>
+              <th id="hdrPetWhale2">Whale</th>
+              <th id="hdrPetWindow2">Window</th>
+              <th id="hdrPetStatus2">Status</th>
+            </tr>
+          </thead>
+          <tbody id="enemyPetsTableBody">
+            <tr><td colspan="3">Loading…</td></tr>
+          </tbody>
+        </table>
+        <div class="enemy-summary" id="enemySummary">
+          Enemy pets: – active | – not used yet | – expired
+        </div>
+        <div class="legend" id="enemyLegend">
+          <span>🟢 active</span>
+          <span>🟡 &lt;15m</span>
+          <span>🔴 &lt;5m</span>
+          <span>🔵 expired</span>
+          <span>❓ no data</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="copyToast" class="copy-toast">Copied to clipboard</div>
+
+<script>
+const API_URL = "YOUR_WEB_APP_URL_HERE";
+
+// Your default battle start (UTC)
+const BATTLE_START_UTC = "2025-12-06T12:00:00Z";
+
+// Phases relative to start (in minutes)
+const PHASES = [
+  { label_en: "Pre-battle",         label_pt: "Pré-batalha",        startMin: -60, endMin: 0   },
+  { label_en: "Phase 1 – Setup",    label_pt: "Fase 1 – Setup",     startMin: 0,   endMin: 90  },
+  { label_en: "Phase 2 – Push",     label_pt: "Fase 2 – Push",      startMin: 90,  endMin: 210 },
+  { label_en: "Phase 3 – Endgame",  label_pt: "Fase 3 – Endgame",   startMin: 210, endMin: 300 },
+  { label_en: "Battle finished",    label_pt: "Batalha terminada",  startMin: 300, endMin: 600 }
+];
+
+/* ========= I18N STRINGS ========= */
+const I18N = {
+  en: {
+    title: "Whiteout Survival – Battle Dashboard",
+    badge: "Rallies & Pets",
+    subtitle: "Left: Rally sync (phases + alliance). Right: our pets & enemy pets.",
+    battleTimeLabel: "Battle Time (UTC)",
+    tickerLabel: "Pet Alert",
+    tickerIdle: "No pet changes in the next 15 minutes.",
+    tickerExpiring: names => `${names} pets <5m left`,
+    tickerExpired: names => `${names} pets EXPIRING / EXPIRED – update marches!`,
+    tickerUpcoming: names => `${names} pets activate soon`,
+    rallyCardTitle: "Rally Timing",
+    rallyCardSubtitle: "Based on march times from Plan sheet. VIP/HOE per phase from Roles tab.",
+    ourPetsTitle: "Our Pets – All Whales",
+    ourPetsSubtitle: "From Pets tab. Start time only, dashboard assumes 2h duration.",
+    enemyPetsTitle: "Enemy Pets – Opponent Whales",
+    enemyPetsSubtitle: "From EnemyPets tab. Start time only, dashboard assumes 2h duration.",
+    chatTitle: "Alliance Chat Message",
+    chatHeader: "ATTENTION - WHALE RALLY TIMINGS",
+    chatLineFirst: name => `${name} – call first`,
+    chatLineOther: (name, offset) => `${name} – call after ${offset}s`,
+    tableRallyOrder: "Order",
+    tableRallyPlayer: "Player",
+    tableRallyMarch: "March (s)",
+    tableRallyOffset: "Offset",
+    tablePetWhale: "Whale",
+    tablePetWindow: "Window",
+    tablePetStatus: "Status",
+    statusNoPet: "⚪ No pet",
+    statusNoData: "❓ No data",
+    statusExpired: "🔵 Expired",
+    statusStartsIn: mins => `⏱ Starts in ${mins}`,
+    statusNotUsedYet: mins => `⏱ Not used yet (${mins} to start)`,
+    statusActiveLeft: mins => `🟢 Active (${mins} left)`,
+    copyButton: "📋 Copy",
+    syncPrefix: "Sheet sync:",
+    syncAgo: secs => `(${secs}s ago)`,
+    localTimeLabel: "Your local time:",
+    enemySummary: (a, n, e) =>
+      `Enemy pets: ${a} active | ${n} not used yet | ${e} expired`,
+    allianceLabel: "Alliance"
+  },
+  pt: {
+    title: "Whiteout Survival – Painel de Batalha",
+    badge: "Rallies & Pets",
+    subtitle: "Esquerda: sincronização de rallies (fases + aliança). Direita: nossos pets e pets do inimigo.",
+    battleTimeLabel: "Hora de Batalha (UTC)",
+    tickerLabel: "Alerta de Pets",
+    tickerIdle: "Sem mudanças de pets nos próximos 15 minutos.",
+    tickerExpiring: names => `Pets de ${names} terminam em <5m`,
+    tickerExpired: names => `Pets de ${names} EXPIRANDO / EXPIRADOS – ajustem as marchas!`,
+    tickerUpcoming: names => `Pets de ${names} serão ativados em breve`,
+    rallyCardTitle: "Tempo de Rally",
+    rallyCardSubtitle: "Com base nos tempos de marcha da aba Plan. VIP/HOE por fase definidos em Roles.",
+    ourPetsTitle: "Nossos Pets – Todas as Baleias",
+    ourPetsSubtitle: "Da aba Pets. Só horário de início, duração de 2h.",
+    enemyPetsTitle: "Pets do Inimigo – Baleias Adversárias",
+    enemyPetsSubtitle: "Da aba EnemyPets. Só horário de início, duração de 2h.",
+    chatTitle: "Mensagem para o Chat da Aliança",
+    chatHeader: "ATENÇÃO - HORÁRIOS DE RALLY DAS BALEIAS",
+    chatLineFirst: name => `${name} – chamar primeiro`,
+    chatLineOther: (name, offset) => `${name} – chamar depois de ${offset}s`,
+    tableRallyOrder: "Ordem",
+    tableRallyPlayer: "Jogador",
+    tableRallyMarch: "Marcha (s)",
+    tableRallyOffset: "Atraso",
+    tablePetWhale: "Baleia",
+    tablePetWindow: "Janela",
+    tablePetStatus: "Status",
+    statusNoPet: "⚪ Sem pet",
+    statusNoData: "❓ Sem dados",
+    statusExpired: "🔵 Expirado",
+    statusStartsIn: mins => `⏱ Começa em ${mins}`,
+    statusNotUsedYet: mins => `⏱ Ainda não usado (${mins} para começar)`,
+    statusActiveLeft: mins => `🟢 Ativo (${mins} restantes)`,
+    copyButton: "📋 Copiar",
+    syncPrefix: "Sync da planilha:",
+    syncAgo: secs => `(${secs}s atrás)`,
+    localTimeLabel: "Sua hora local:",
+    enemySummary: (a, n, e) =>
+      `Pets do inimigo: ${a} ativos | ${n} ainda não usados | ${e} expirados`,
+    allianceLabel: "Aliança"
+  }
+};
+
+let currentLang = "en";
+
+let allPlanRows = [];
+let planRows = [];
+let petSchedule = [];
+let enemySchedule = [];
+let rolesMap = {};
+let selectedPhase = 1;
+let selectedAlliance = "VIP";
+
+let serverOffsetMs = 0;
+let serverRefDate = null;
+let lastSyncServerTime = null;
+let lastFetchError = false;
+
+/* ========= CLOCK & PHASE ========= */
+function autoDetectPhase() {
+  const nowServer = new Date(Date.now() + serverOffsetMs);
+  const start = new Date(BATTLE_START_UTC);
+  const minSinceStart = (nowServer - start) / 60000;
+
+  if (minSinceStart < 0) return 1;
+  if (minSinceStart < 90) return 1;      // first 1.5h
+  if (minSinceStart < 210) return 2;     // next 2h
+  if (minSinceStart < 300) return 3;     // last 1.5h
+  return 3;
+}
+
+function markCurrentPhaseButton(currentPhase) {
+  document.querySelectorAll("#phaseSelector .btn").forEach(btn => {
+    const p = Number(btn.getAttribute("data-phase")) || 0;
+    if (p === currentPhase) btn.classList.add("current-phase");
+    else btn.classList.remove("current-phase");
+  });
+}
+
+function updateBattleProgressBar() {
+  const bar = document.getElementById("phaseProgressBar");
+  if (!bar) return;
+
+  const nowServer = new Date(Date.now() + serverOffsetMs);
+  const start = new Date(BATTLE_START_UTC);
+  const end = new Date(start.getTime() + 5 * 60 * 60 * 1000); // 5h
+  const total = end - start;
+  const elapsed = nowServer - start;
+  let ratio = elapsed / total;
+  if (ratio < 0) ratio = 0;
+  if (ratio > 1) ratio = 1;
+
+  bar.style.width = (ratio * 100).toFixed(1) + "%";
+}
+
+function updateClockAndMeta() {
+  const nowLocal = new Date();
+  const nowServer = new Date(Date.now() + serverOffsetMs);
+  document.getElementById("utcClock").textContent =
+    nowServer.toISOString().substring(11,19);
+
+  // Local time
+  document.getElementById("localTime").textContent =
+    `${I18N[currentLang].localTimeLabel} ${nowLocal.toTimeString().substring(0,8)}`;
+
+  // Sync status
+  const syncEl = document.getElementById("syncStatus");
+  if (!lastSyncServerTime || lastFetchError) {
+    syncEl.classList.remove("sync-ok","sync-warn");
+    syncEl.classList.add("sync-bad");
+    syncEl.textContent = I18N[currentLang].syncPrefix + " ERROR";
+  } else {
+    const diffSec = Math.round((nowServer - lastSyncServerTime)/1000);
+    let cls = "sync-ok";
+    if (diffSec > 60) cls = "sync-bad";
+    else if (diffSec > 20) cls = "sync-warn";
+    syncEl.classList.remove("sync-ok","sync-warn","sync-bad");
+    syncEl.classList.add(cls);
+    syncEl.textContent =
+      `${I18N[currentLang].syncPrefix} ${lastSyncServerTime.toISOString().substring(11,19)} UTC ` +
+      I18N[currentLang].syncAgo(diffSec);
+  }
+
+  // Phase label + current-phase button highlight
+  const phaseEl = document.getElementById("phaseLabel");
+  const start = new Date(BATTLE_START_UTC);
+  const minSinceStart = (nowServer - start) / 60000;
+  let phaseLabel = PHASES[0].label_en;
+  for (const ph of PHASES) {
+    if (minSinceStart >= ph.startMin && minSinceStart < ph.endMin) {
+      phaseLabel = currentLang === "pt" ? ph.label_pt : ph.label_en;
+      break;
+    }
+  }
+  phaseEl.textContent = phaseLabel;
+
+  const currentPhase = autoDetectPhase();
+  markCurrentPhaseButton(currentPhase);
+  updateBattleProgressBar();
+}
+setInterval(updateClockAndMeta, 1000);
+
+/* ========= HELPERS ========= */
+function minutesText(min) {
+  return min <= 1 ? Math.round(min*60) + "s" : Math.round(min) + "m";
+}
+
+/* Build 2h window from Pets tab (our whales) */
+function buildOwnWindow(p) {
+  if (!serverRefDate || !p.PetStartUTC) return null;
+  const raw = new Date(p.PetStartUTC);
+  if (isNaN(raw)) return null;
+
+  const h = raw.getUTCHours();
+  const m = raw.getUTCMinutes();
+  const start = new Date(serverRefDate);
+  start.setUTCHours(h, m, 0, 0);
+  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+  return { start, end };
+}
+
+/* Build 2h window from EnemyPets tab (enemy whales) */
+function buildEnemyWindow(p) {
+  if (!serverRefDate || !p.PetStartUTC) return null;
+  const raw = new Date(p.PetStartUTC);
+  if (isNaN(raw)) return null;
+
+  const h = raw.getUTCHours();
+  const m = raw.getUTCMinutes();
+  const start = new Date(serverRefDate);
+  start.setUTCHours(h, m, 0, 0);
+  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+  return { start, end };
+}
+
+/* ========= PET STATUS (OUR) ========= */
+function petStatus(p) {
+  const t = I18N[currentLang];
+  const window = buildOwnWindow(p);
+  if (!window) return {label: t.statusNoPet, type:"none"};
+
+  const now = new Date(Date.now() + serverOffsetMs);
+  const mStart = (window.start - now)/60000;
+  const mEnd   = (window.end   - now)/60000;
+
+  if (mEnd <= 0) return {label: t.statusExpired, type:"expired"};
+
+  if (mStart > 0) {
+    return {
+      label: t.statusStartsIn(minutesText(mStart)),
+      type: mStart <= 5 ? "soon" : "upcoming"
+    };
+  }
+
+  if (mEnd < 5)  return { label: t.statusActiveLeft(minutesText(mEnd)), type:"critical" };
+  if (mEnd < 15) return { label: t.statusActiveLeft(minutesText(mEnd)), type:"soon" };
+
+  return { label: t.statusActiveLeft(minutesText(mEnd)), type:"active" };
+}
+
+/* ========= PET STATUS (ENEMY) ========= */
+function enemyPetStatus(p) {
+  const t = I18N[currentLang];
+  const window = buildEnemyWindow(p);
+  if (!window) return {label:t.statusNoData, type:"none"};
+
+  const now = new Date(Date.now() + serverOffsetMs);
+  const mStart = (window.start - now)/60000;
+  const mEnd   = (window.end   - now)/60000;
+
+  if (mEnd <= 0) return {label:t.statusExpired, type:"expired"};
+
+  if (mStart > 0) {
+    return {
+      label: t.statusNotUsedYet(minutesText(mStart)),
+      type: mStart <= 5 ? "soon" : "upcoming"
+    };
+  }
+
+  if (mEnd < 5)  return { label: t.statusActiveLeft(minutesText(mEnd)), type:"critical" };
+  if (mEnd < 15) return { label: t.statusActiveLeft(minutesText(mEnd)), type:"soon" };
+
+  return { label: t.statusActiveLeft(minutesText(mEnd)), type:"active" };
+}
+
+/* ========= PLAN FILTER BY PHASE & ALLIANCE (recompute order + offsets) ========= */
+function filteredPlanForPhaseAlliance(phaseNumber, alliance) {
+  const p = Number(phaseNumber) || 1;
+  const a = (alliance || "VIP").toUpperCase();
+
+  // 1) Filter by Roles: only whales whose role in that phase matches alliance
+  let subset = allPlanRows.filter(r => {
+    const name = (r.PlayerName || r.playername || "").trim();
+    if (!name) return false;
+    const roleInfo = rolesMap[name];
+    if (!roleInfo) return false;
+    const role = (roleInfo[p] || "").toUpperCase();
+    return role === a;   // VIP or HOE
+  });
+
+  if (!subset.length) return [];
+
+  // 2) Sort by MarchTimeSec: slowest first (so they call first)
+  subset = subset.slice().sort((a, b) => {
+    const ma = Number(a.MarchTimeSec || 0);
+    const mb = Number(b.MarchTimeSec || 0);
+    return mb - ma; // descending
+  });
+
+  // 3) Compute alliance-specific call order and offsets
+  const maxMarch = Math.max(
+    ...subset.map(r => Number(r.MarchTimeSec || 0))
+  );
+
+  return subset.map((r, idx) => {
+    const march = Number(r.MarchTimeSec || 0);
+    const valid = isFinite(march) && march > 0;
+    const offset = valid ? (maxMarch - march) : 0;
+
+    return {
+      ...r,
+      _CallOrder: idx + 1,              // alliance-specific order
+      _OffsetSec: Math.round(offset)    // alliance-specific offset vs slowest
+    };
+  });
+}
+
+/* ========= RENDERERS ========= */
+function renderPets() {
+  const tbody = document.getElementById("petsTableBody");
+  tbody.innerHTML = "";
+
+  petSchedule.forEach(p => {
+    const name = p.WhaleName || p.PlayerName || "-";
+    const win  = buildOwnWindow(p);
+    let winText = "-";
+    let warning = false;
+    if (win) {
+      const s = win.start.toISOString().substring(11,16);
+      const e = win.end.toISOString().substring(11,16);
+      winText = `${s} - ${e}`;
+    } else {
+      warning = true;
+    }
+    const st = petStatus(p);
+
+    tbody.innerHTML += `
+      <tr class="${warning ? "row-warning" : ""}">
+        <td>${warning ? "⚠️ " : ""}${name}</td>
+        <td>${winText}</td>
+        <td><span class="pet-badge pet-badge--${st.type}">${st.label}</span></td>
+      </tr>`;
+  });
+}
+
+function renderEnemyPets() {
+  const tbody = document.getElementById("enemyPetsTableBody");
+  tbody.innerHTML = "";
+
+  let activeCount = 0, notUsedCount = 0, expiredCount = 0;
+
+  enemySchedule.forEach(p => {
+    const name = p.WhaleName || p.PlayerName || "-";
+    const win  = buildEnemyWindow(p);
+    let winText = "-";
+    if (win) {
+      const s = win.start.toISOString().substring(11,16);
+      const e = win.end.toISOString().substring(11,16);
+      winText = `${s} - ${e}`;
+    }
+    const st = enemyPetStatus(p);
+    if (st.type === "critical" || st.type === "soon" || st.type === "active") activeCount++;
+    else if (st.type === "upcoming") notUsedCount++;
+    else if (st.type === "expired") expiredCount++;
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${name}</td>
+        <td>${winText}</td>
+        <td><span class="pet-badge pet-badge--${st.type}">${st.label}</span></td>
+      </tr>`;
+  });
+
+  const t = I18N[currentLang];
+  document.getElementById("enemySummary").textContent =
+    t.enemySummary(activeCount, notUsedCount, expiredCount);
+}
+
+function renderRallies() {
+  const tbody = document.getElementById("rallyTableBody");
+  tbody.innerHTML = "";
+
+  if (!planRows.length) {
+    tbody.innerHTML = `<tr><td colspan="4">No whales configured for this phase/alliance.</td></tr>`;
+    return;
+  }
+
+  planRows.forEach((r,i) => {
+    const mt = Number(r.MarchTimeSec);
+    const invalid = !isFinite(mt) || mt <= 5;
+    const playerName = (invalid ? "⚠️ " : "") + r.PlayerName;
+    const order = r._CallOrder || (i + 1);
+    const offset = (typeof r._OffsetSec === "number" ? r._OffsetSec : 0);
+
+    tbody.innerHTML += `
+      <tr class="${invalid ? "row-warning" : ""}">
+        <td><span class="order-badge">${order}</span></td>
+        <td>${playerName}${i===0?'<span class="first-tag">First</span>':''}</td>
+        <td>${r.MarchTimeSec}</td>
+        <td>${offset}s</td>
+      </tr>`;
+  });
+}
+
+/* ========= TICKER (OUR PETS) ========= */
+function updateTicker() {
+  const t = I18N[currentLang];
+  const now = new Date(Date.now() + serverOffsetMs);
+  const ticker = document.getElementById("ticker");
+  const text = document.getElementById("tickerText");
+
+  let expired=[], expiring=[], upcoming=[];
+
+  petSchedule.forEach(p => {
+    const win = buildOwnWindow(p);
+    if (!win) return;
+
+    const mStart = (win.start-now)/60000;
+    const mEnd   = (win.end-now)/60000;
+    const name = p.WhaleName || p.PlayerName;
+
+    if (mEnd<=0 && mEnd>-5) expired.push(name);
+    else if (mEnd>0 && mEnd<5) expiring.push(name);
+    else if (mStart>0 && mStart<5) upcoming.push(name);
+  });
+
+  if (expired.length || expiring.length) {
+    const names = expired.concat(expiring).join(", ");
+    text.textContent = t.tickerExpired(names);
+    ticker.className = "ticker ticker--danger";
+  }
+  else if (upcoming.length) {
+    text.textContent = t.tickerUpcoming(upcoming.join(", "));
+    ticker.className = "ticker ticker--warning";
+  }
+  else {
+    text.textContent = t.tickerIdle;
+    ticker.className = "ticker ticker--idle";
+  }
+}
+
+/* ========= CHAT MACRO ========= */
+function generateChatText() {
+  const t = I18N[currentLang];
+  if (!planRows.length) {
+    document.getElementById("shareText").value =
+      t.chatHeader + "\n\n(No whales configured for this phase/alliance.)";
+    return;
+  }
+
+  let lines = [t.chatHeader, ""];
+
+  planRows.forEach((r,i) => {
+    const offset = (typeof r._OffsetSec === "number" ? r._OffsetSec : 0);
+    if (i===0) lines.push(t.chatLineFirst(r.PlayerName));
+    else lines.push(t.chatLineOther(r.PlayerName, offset));
+  });
+
+  document.getElementById("shareText").value = lines.join("\n");
+}
+
+/* ========= STATIC TEXT TRANSLATION ========= */
+function applyStaticTranslations() {
+  const t = I18N[currentLang];
+
+  const titleEl = document.getElementById("titleText");
+  titleEl.childNodes[0].textContent = t.title + " ";
+  document.getElementById("badgeText").textContent = t.badge;
+  document.getElementById("subtitleText").textContent = t.subtitle;
+
+  document.getElementById("battleTimeLabel").textContent = t.battleTimeLabel;
+  document.getElementById("tickerLabel").textContent = t.tickerLabel;
+
+  document.getElementById("rallyCardTitle").textContent = t.rallyCardTitle;
+  document.getElementById("rallyCardSubtitle").textContent = t.rallyCardSubtitle;
+  document.getElementById("ourPetsTitle").textContent = t.ourPetsTitle;
+  document.getElementById("ourPetsSubtitle").textContent = t.ourPetsSubtitle;
+  document.getElementById("enemyPetsTitle").textContent = t.enemyPetsTitle;
+  document.getElementById("enemyPetsSubtitle").textContent = t.enemyPetsSubtitle;
+  document.getElementById("chatTitle").textContent = t.chatTitle;
+  document.getElementById("copyBtn").textContent = t.copyButton;
+  document.getElementById("allianceLabel").textContent = t.allianceLabel;
+
+  document.getElementById("hdrRallyOrder").textContent  = t.tableRallyOrder;
+  document.getElementById("hdrRallyPlayer").textContent = t.tableRallyPlayer;
+  document.getElementById("hdrRallyMarch").textContent  = t.tableRallyMarch;
+  document.getElementById("hdrRallyOffset").textContent = t.tableRallyOffset;
+
+  document.getElementById("hdrPetWhale1").textContent  = t.tablePetWhale;
+  document.getElementById("hdrPetWindow1").textContent = t.tablePetWindow;
+  document.getElementById("hdrPetStatus1").textContent = t.tablePetStatus;
+  document.getElementById("hdrPetWhale2").textContent  = t.tablePetWhale;
+  document.getElementById("hdrPetWindow2").textContent = t.tablePetWindow;
+  document.getElementById("hdrPetStatus2").textContent = t.tablePetStatus;
+}
+
+/* ========= COPY BUTTON + TOAST ========= */
+document.getElementById("copyBtn").onclick = () => {
+  navigator.clipboard.writeText(document.getElementById("shareText").value);
+  const toast = document.getElementById("copyToast");
+  toast.classList.add("show");
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 1400);
+};
+
+/* ========= LANGUAGE TOGGLE ========= */
+document.getElementById("langToggle").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-lang]");
+  if (!btn) return;
+  currentLang = btn.getAttribute("data-lang") || "en";
+
+  document.querySelectorAll("#langToggle .lang-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+
+  applyStaticTranslations();
+  generateChatText();
+  renderPets();
+  renderEnemyPets();
+  updateTicker();
+});
+
+/* ========= PHASE SELECTOR ========= */
+function syncPhaseButtons() {
+  document.querySelectorAll("#phaseSelector .btn").forEach(b => {
+    b.classList.remove("active-phase");
+    const p = Number(b.getAttribute("data-phase")) || 0;
+    if (p === selectedPhase) b.classList.add("active-phase");
+  });
+}
+
+document.getElementById("phaseSelector").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-phase]");
+  if (!btn) return;
+  selectedPhase = Number(btn.getAttribute("data-phase")) || 1;
+  syncPhaseButtons();
+
+  planRows = filteredPlanForPhaseAlliance(selectedPhase, selectedAlliance);
+  renderRallies();
+  generateChatText();
+});
+
+/* ========= ALLIANCE SELECTOR ========= */
+function syncAllianceButtons() {
+  document.querySelectorAll("#allianceSelector .btn").forEach(b => {
+    b.classList.remove("active-alliance");
+    const a = (b.getAttribute("data-ally") || "").toUpperCase();
+    if (a === selectedAlliance.toUpperCase()) b.classList.add("active-alliance");
+  });
+
+  const body = document.body;
+  if (selectedAlliance === "HOE") {
+    body.classList.remove("mode-vip");
+    body.classList.add("mode-hoe");
+  } else {
+    body.classList.remove("mode-hoe");
+    body.classList.add("mode-vip");
+  }
+}
+
+document.getElementById("allianceSelector").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-ally]");
+  if (!btn) return;
+  selectedAlliance = (btn.getAttribute("data-ally") || "VIP").toUpperCase();
+  syncAllianceButtons();
+
+  planRows = filteredPlanForPhaseAlliance(selectedPhase, selectedAlliance);
+  renderRallies();
+  generateChatText();
+});
+
+/* ========= FORCE REFRESH BUTTON ========= */
+document.getElementById("refreshBtn").addEventListener("click", () => {
+  fetchData();
+});
+
+/* ========= FETCH DATA ========= */
+async function fetchData() {
+  try {
+    const res = await fetch(API_URL + "?t=" + Date.now());
+    const data = await res.json();
+
+    lastFetchError = false;
+    document.getElementById("errorBanner").style.display = "none";
+
+    if (data.updated) {
+      serverRefDate = new Date(data.updated);
+      const server = serverRefDate.getTime();
+      const local  = Date.now();
+      serverOffsetMs = server - local;
+      lastSyncServerTime = new Date(server);
+    }
+
+    allPlanRows   = data.plan      || data.rows || [];
+    petSchedule   = data.pets      || [];
+    enemySchedule = data.enemyPets || [];
+
+    const rolesArr = data.roles || [];
+    rolesMap = {};
+    rolesArr.forEach(r => {
+      const name = (r.PlayerName || r.playername || "").trim();
+      if (!name) return;
+      rolesMap[name] = {
+        1: (r.Phase1 || "").toString().toUpperCase(),
+        2: (r.Phase2 || "").toString().toUpperCase(),
+        3: (r.Phase3 || "").toString().toUpperCase()
+      };
+    });
+
+    if (!window.__phaseInitialized) {
+      selectedPhase = autoDetectPhase();
+      window.__phaseInitialized = true;
+    }
+
+    planRows = filteredPlanForPhaseAlliance(selectedPhase, selectedAlliance);
+
+    renderRallies();
+    renderPets();
+    renderEnemyPets();
+    updateTicker();
+    generateChatText();
+    updateClockAndMeta();
+    syncPhaseButtons();
+    syncAllianceButtons();
+  } catch (err) {
+    console.error("Fetch error", err);
+    lastFetchError = true;
+    document.getElementById("errorBanner").style.display = "block";
+  }
+}
+
+/* ========= INIT ========= */
+applyStaticTranslations();
+setInterval(fetchData, 10000);
+fetchData();
+updateClockAndMeta();
+syncAllianceButtons();
+</script>
+</body>
+</html>
