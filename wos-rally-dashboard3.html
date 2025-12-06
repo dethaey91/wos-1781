@@ -49,7 +49,7 @@ body {
   isolation: isolate;
 }
 
-/* Background layers: grid + glow + noise */
+/* Background layers: grid + glow + vague structures */
 .app::before {
   content: "";
   position: absolute;
@@ -75,15 +75,20 @@ body {
   z-index: -4;
 }
 
-/* Subtle noise overlay */
-body::after {
-  content: "";
-  position: fixed;
+/* Subtle fortress silhouettes */
+.app::marker, .app::selection { /* just to avoid misuse */ }
+
+/* Silhouette using pseudo layer */
+.app > .structure-layer {
+  position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.35;
-  z-index: 9999;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='4' stitchTiles='noStitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.18'/%3E%3C/svg%3E");
+  background:
+    linear-gradient(to top, rgba(15,23,42,0.9), transparent 35%),
+    radial-gradient(circle at 15% 90%, rgba(30,64,175,0.5), transparent 55%),
+    radial-gradient(circle at 80% 88%, rgba(127,29,29,0.5), transparent 50%);
+  opacity: 0.55;
+  z-index: -2;
 }
 
 /* Error banner */
@@ -254,9 +259,10 @@ h1 {
   border-radius: 999px;
   border: 1px solid rgba(148,163,184,0.7);
   background: rgba(15,23,42,0.96);
+  box-shadow: 0 0 12px rgba(59,130,246,0.6);
 }
 .phase-progress {
-  width: 180px;
+  width: 190px;
   height: 4px;
   border-radius: 999px;
   background: rgba(15,23,42,0.9);
@@ -393,6 +399,33 @@ h1 {
 .card-subtitle {
   font-size: 0.8rem;
   color: var(--sub);
+}
+
+/* Rally card unique header artwork */
+.rally-card {
+  padding-top: 1.2rem;
+}
+.rally-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.rally-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid rgba(148,163,184,0.7);
+  background:
+    linear-gradient(145deg, rgba(59,130,246,0.4), rgba(15,23,42,0.95));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 14px rgba(59,130,246,0.75);
+  font-size: 0.7rem;
+}
+.rally-icon::before {
+  content: "⇧⇧";
+  letter-spacing: 0.02em;
 }
 
 /* Right column stacking */
@@ -658,7 +691,7 @@ textarea {
   color: #9ca3af;
 }
 
-/* Legend */
+/* Legend with custom icons (dots) */
 .legend {
   margin-top: 0.4rem;
   font-size: 0.75rem;
@@ -667,6 +700,19 @@ textarea {
 .legend span {
   margin-right: 0.6rem;
 }
+.legend-dot {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  margin-right: 0.25rem;
+}
+.legend-dot.active { background: rgba(34,197,94,0.9); }
+.legend-dot.soon { background: rgba(245,158,11,0.9); }
+.legend-dot.critical { background: rgba(248,113,113,0.95); }
+.legend-dot.expired { background: rgba(59,130,246,0.9); }
+.legend-dot.none { background: rgba(148,163,184,0.8); }
+.legend-dot.nodata { background: rgba(148,163,184,0.4); }
 
 /* Copy toast */
 .copy-toast {
@@ -695,6 +741,8 @@ textarea {
 
 <body class="mode-vip">
 <div class="app">
+  <div class="structure-layer"></div>
+
   <div id="errorBanner" class="error-banner">
     ⚠️ Live data unavailable – using last known plan.
   </div>
@@ -746,10 +794,15 @@ textarea {
 
   <div class="columns">
     <!-- LEFT: RALLY CARD -->
-    <div class="card">
-      <div class="card-title" id="rallyCardTitle">Rally Timing</div>
-      <div class="card-subtitle" id="rallyCardSubtitle">
-        Based on march times from Plan sheet. VIP/HOE per phase from Roles tab.
+    <div class="card rally-card">
+      <div class="rally-card-header">
+        <div class="rally-icon"></div>
+        <div>
+          <div class="card-title" id="rallyCardTitle">Rally Timing</div>
+          <div class="card-subtitle" id="rallyCardSubtitle">
+            Based on march times from Plan sheet. VIP/HOE per phase from Roles tab.
+          </div>
+        </div>
       </div>
 
       <div class="divider"></div>
@@ -816,11 +869,11 @@ textarea {
           </tbody>
         </table>
         <div class="legend" id="ownLegend">
-          <span>🟢 active</span>
-          <span>🟡 &lt;15m</span>
-          <span>🔴 &lt;5m</span>
-          <span>🔵 expired</span>
-          <span>⚪ no pet</span>
+          <span><span class="legend-dot active"></span>Active</span>
+          <span><span class="legend-dot soon"></span><15m</span>
+          <span><span class="legend-dot critical"></span><5m</span>
+          <span><span class="legend-dot expired"></span>Expired</span>
+          <span><span class="legend-dot none"></span>No pet</span>
         </div>
       </div>
 
@@ -848,11 +901,11 @@ textarea {
           Enemy pets: – active | – not used yet | – expired
         </div>
         <div class="legend" id="enemyLegend">
-          <span>🟢 active</span>
-          <span>🟡 &lt;15m</span>
-          <span>🔴 &lt;5m</span>
-          <span>🔵 expired</span>
-          <span>❓ no data</span>
+          <span><span class="legend-dot active"></span>Active</span>
+          <span><span class="legend-dot soon"></span><15m</span>
+          <span><span class="legend-dot critical"></span><5m</span>
+          <span><span class="legend-dot expired"></span>Expired</span>
+          <span><span class="legend-dot nodata"></span>No data</span>
         </div>
       </div>
     </div>
@@ -862,9 +915,9 @@ textarea {
 <div id="copyToast" class="copy-toast">Copied to clipboard</div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyxyAZJahC4ouheWWMKt0KZ7fFW3PPkeTndnu3HSyuIyFZfIakN294TeC9nANU8Y5j-/exec";
+const API_URL = "YOUR_WEB_APP_URL_HERE";
 
-// Your default battle start (UTC)
+// Default battle start (UTC)
 const BATTLE_START_UTC = "2025-12-06T12:00:00Z";
 
 // Phases relative to start (in minutes)
@@ -905,12 +958,12 @@ const I18N = {
     tablePetWhale: "Whale",
     tablePetWindow: "Window",
     tablePetStatus: "Status",
-    statusNoPet: "⚪ No pet",
-    statusNoData: "❓ No data",
-    statusExpired: "🔵 Expired",
-    statusStartsIn: mins => `⏱ Starts in ${mins}`,
-    statusNotUsedYet: mins => `⏱ Not used yet (${mins} to start)`,
-    statusActiveLeft: mins => `🟢 Active (${mins} left)`,
+    statusNoPet: "No pet",
+    statusNoData: "No data",
+    statusExpired: "Expired",
+    statusStartsIn: mins => `Starts in ${mins}`,
+    statusNotUsedYet: mins => `Not used yet (${mins} to start)`,
+    statusActiveLeft: mins => `Active (${mins} left)`,
     copyButton: "📋 Copy",
     syncPrefix: "Sheet sync:",
     syncAgo: secs => `(${secs}s ago)`,
@@ -946,12 +999,12 @@ const I18N = {
     tablePetWhale: "Baleia",
     tablePetWindow: "Janela",
     tablePetStatus: "Status",
-    statusNoPet: "⚪ Sem pet",
-    statusNoData: "❓ Sem dados",
-    statusExpired: "🔵 Expirado",
-    statusStartsIn: mins => `⏱ Começa em ${mins}`,
-    statusNotUsedYet: mins => `⏱ Ainda não usado (${mins} para começar)`,
-    statusActiveLeft: mins => `🟢 Ativo (${mins} restantes)`,
+    statusNoPet: "Sem pet",
+    statusNoData: "Sem dados",
+    statusExpired: "Expirado",
+    statusStartsIn: mins => `Começa em ${mins}`,
+    statusNotUsedYet: mins => `Ainda não usado (${mins} para começar)`,
+    statusActiveLeft: mins => `Ativo (${mins} restantes)`,
     copyButton: "📋 Copiar",
     syncPrefix: "Sync da planilha:",
     syncAgo: secs => `(${secs}s atrás)`,
@@ -1509,4 +1562,3 @@ syncAllianceButtons();
 </script>
 </body>
 </html>
-
