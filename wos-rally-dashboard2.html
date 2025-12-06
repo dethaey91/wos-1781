@@ -42,6 +42,18 @@ body {
   box-shadow: 0 30px 80px rgba(0,0,0,0.65);
 }
 
+/* Error banner */
+.error-banner {
+  display: none;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.75rem;
+  background: rgba(185,28,28,0.15);
+  border: 1px solid rgba(248,113,113,0.9);
+  color: #fecaca;
+  font-size: 0.85rem;
+}
+
 /* Header & title */
 .header-row {
   display: flex;
@@ -108,8 +120,10 @@ h1 {
 /* Big UTC clock */
 .clock-row {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: flex-end;
   margin-top: 0.75rem;
+  gap: 1rem;
 }
 .clock-panel {
   display: inline-flex;
@@ -136,6 +150,54 @@ h1 {
   letter-spacing: 0.12em;
   color: #e5f2ff;
   text-shadow: 0 0 18px rgba(148,197,255,0.6);
+}
+
+/* Sync & local time */
+.clock-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.sync-status {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,0.6);
+  background: rgba(15,23,42,0.9);
+  color: #9ca3af;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.sync-ok {
+  border-color: rgba(34,197,94,0.9);
+  color: #bbf7d0;
+}
+.sync-warn {
+  border-color: rgba(245,158,11,0.9);
+  color: #facc15;
+}
+.sync-bad {
+  border-color: rgba(248,113,113,0.9);
+  color: #fecaca;
+}
+.local-time {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+/* Phase strip */
+.phase-strip {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #e5e7eb;
+}
+.phase-label {
+  font-weight: 600;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,0.7);
+  background: rgba(15,23,42,0.9);
 }
 
 /* Cards */
@@ -232,6 +294,12 @@ th, td {
   text-align: center;
 }
 
+/* Warning rows */
+.row-warning {
+  border-left: 3px solid rgba(248,113,113,0.9);
+  background: rgba(127,29,29,0.15);
+}
+
 /* Order bubble */
 .order-badge {
   display: inline-flex;
@@ -255,7 +323,7 @@ th, td {
   color: #bbf7d0;
 }
 
-/* Pet badges */
+/* Pet badges (with emoji semantics) */
 .pet-badge {
   padding: 0.15rem 0.55rem;
   border-radius: 0.8rem;
@@ -349,11 +417,32 @@ textarea {
   border-color: var(--border-soft);
   background: radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,0.9));
 }
+
+/* Enemy summary */
+.enemy-summary {
+  margin-top: 0.45rem;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+/* Legend */
+.legend {
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+.legend span {
+  margin-right: 0.6rem;
+}
 </style>
 </head>
 
 <body>
 <div class="app">
+  <div id="errorBanner" class="error-banner">
+    ⚠️ Live data unavailable – using last known plan.
+  </div>
+
   <div class="header-row">
     <div>
       <h1 id="titleText">
@@ -374,6 +463,17 @@ textarea {
     <div class="clock-panel">
       <div class="clock-label" id="battleTimeLabel">Battle Time (UTC)</div>
       <div class="clock-time" id="utcClock">--:--:--</div>
+      <div class="phase-strip">
+        <span id="phaseLabel" class="phase-label">Pre-battle</span>
+      </div>
+    </div>
+    <div class="clock-meta">
+      <div id="syncStatus" class="sync-status">
+        Sync: --:--:-- UTC (–s ago)
+      </div>
+      <div id="localTime" class="local-time">
+        Your local time: --:--:--
+      </div>
     </div>
   </div>
 
@@ -433,6 +533,13 @@ textarea {
             <tr><td colspan="3">Loading…</td></tr>
           </tbody>
         </table>
+        <div class="legend" id="ownLegend">
+          <span>🟢 active</span>
+          <span>🟡 &lt;15m</span>
+          <span>🔴 &lt;5m</span>
+          <span>🔵 expired</span>
+          <span>⚪ no pet</span>
+        </div>
       </div>
 
       <div class="card">
@@ -453,6 +560,16 @@ textarea {
             <tr><td colspan="3">Loading…</td></tr>
           </tbody>
         </table>
+        <div class="enemy-summary" id="enemySummary">
+          Enemy pets: – active | – not used yet | – expired
+        </div>
+        <div class="legend" id="enemyLegend">
+          <span>🟢 active</span>
+          <span>🟡 &lt;15m</span>
+          <span>🔴 &lt;5m</span>
+          <span>🔵 expired</span>
+          <span>❓ no data</span>
+        </div>
       </div>
     </div>
   </div>
@@ -460,6 +577,18 @@ textarea {
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbyxyAZJahC4ouheWWMKt0KZ7fFW3PPkeTndnu3HSyuIyFZfIakN294TeC9nANU8Y5j-/exec";
+
+// Set this to your actual SvS battle start (UTC)
+const BATTLE_START_UTC = "2025-12-06T12:00:00Z";
+
+// Phases relative to start (in minutes)
+const PHASES = [
+  { label_en: "Pre-battle", label_pt: "Pré-batalha", startMin: -60, endMin: 0 },
+  { label_en: "Phase 1 – Setup", label_pt: "Fase 1 – Setup", startMin: 0, endMin: 90 },
+  { label_en: "Phase 2 – Push", label_pt: "Fase 2 – Push", startMin: 90, endMin: 210 },
+  { label_en: "Phase 3 – Endgame", label_pt: "Fase 3 – Endgame", startMin: 210, endMin: 300 },
+  { label_en: "Battle finished", label_pt: "Batalha terminada", startMin: 300, endMin: 600 }
+];
 
 /* ========= I18N STRINGS ========= */
 const I18N = {
@@ -471,7 +600,7 @@ const I18N = {
     tickerLabel: "Pet Alert",
     tickerIdle: "No pet changes in the next 15 minutes.",
     tickerExpiring: names => `${names} pets <5m left`,
-    tickerExpired: names => `${names} pets EXPIRED – update marches!`,
+    tickerExpired: names => `${names} pets EXPIRING / EXPIRED – update marches!`,
     tickerUpcoming: names => `${names} pets activate soon`,
     rallyCardTitle: "Rally Timing",
     rallyCardSubtitle: "Based on march times from Plan sheet.",
@@ -490,13 +619,18 @@ const I18N = {
     tablePetWhale: "Whale",
     tablePetWindow: "Window",
     tablePetStatus: "Status",
-    statusNoPet: "No pet",
-    statusNoData: "No data",
-    statusExpired: "Expired",
-    statusStartsIn: mins => `Starts in ${mins}`,
-    statusNotUsedYet: mins => `Not used yet (${mins} to start)`,
-    statusActiveLeft: mins => `Active (${mins} left)`,
-    copyButton: "📋 Copy"
+    statusNoPet: "⚪ No pet",
+    statusNoData: "❓ No data",
+    statusExpired: "🔵 Expired",
+    statusStartsIn: mins => `⏱ Starts in ${mins}`,
+    statusNotUsedYet: mins => `⏱ Not used yet (${mins} to start)`,
+    statusActiveLeft: mins => `🟢 Active (${mins} left)`,
+    copyButton: "📋 Copy",
+    syncPrefix: "Sheet sync:",
+    syncAgo: secs => `(${secs}s ago)`,
+    localTimeLabel: "Your local time:",
+    enemySummary: (a, n, e) =>
+      `Enemy pets: ${a} active | ${n} not used yet | ${e} expired`
   },
   pt: {
     title: "Whiteout Survival – Painel de Batalha",
@@ -506,7 +640,7 @@ const I18N = {
     tickerLabel: "Alerta de Pets",
     tickerIdle: "Sem mudanças de pets nos próximos 15 minutos.",
     tickerExpiring: names => `Pets de ${names} terminam em <5m`,
-    tickerExpired: names => `Pets de ${names} EXPIRARAM – ajustem as marchas!`,
+    tickerExpired: names => `Pets de ${names} EXPIRANDO / EXPIRADOS – ajustem as marchas!`,
     tickerUpcoming: names => `Pets de ${names} serão ativados em breve`,
     rallyCardTitle: "Tempo de Rally",
     rallyCardSubtitle: "Com base nos tempos de marcha da aba Plan.",
@@ -525,13 +659,18 @@ const I18N = {
     tablePetWhale: "Baleia",
     tablePetWindow: "Janela",
     tablePetStatus: "Status",
-    statusNoPet: "Sem pet",
-    statusNoData: "Sem dados",
-    statusExpired: "Expirado",
-    statusStartsIn: mins => `Começa em ${mins}`,
-    statusNotUsedYet: mins => `Ainda não usado (${mins} para começar)`,
-    statusActiveLeft: mins => `Ativo (${mins} restantes)`,
-    copyButton: "📋 Copiar"
+    statusNoPet: "⚪ Sem pet",
+    statusNoData: "❓ Sem dados",
+    statusExpired: "🔵 Expirado",
+    statusStartsIn: mins => `⏱ Começa em ${mins}`,
+    statusNotUsedYet: mins => `⏱ Ainda não usado (${mins} para começar)`,
+    statusActiveLeft: mins => `🟢 Ativo (${mins} restantes)`,
+    copyButton: "📋 Copiar",
+    syncPrefix: "Sync da planilha:",
+    syncAgo: secs => `(${secs}s atrás)`,
+    localTimeLabel: "Sua hora local:",
+    enemySummary: (a, n, e) =>
+      `Pets do inimigo: ${a} ativos | ${n} ainda não usados | ${e} expirados`
   }
 };
 
@@ -542,14 +681,52 @@ let petSchedule = [];
 let enemySchedule = [];
 let serverOffsetMs = 0;
 let serverRefDate = null;
+let lastSyncServerTime = null;
+let lastFetchError = false;
 
 /* ========= CLOCK ========= */
-function updateClock() {
-  const now = new Date(Date.now() + serverOffsetMs);
+function updateClockAndMeta() {
+  const nowLocal = new Date();
+  const nowServer = new Date(Date.now() + serverOffsetMs);
   document.getElementById("utcClock").textContent =
-    now.toISOString().substring(11,19);
+    nowServer.toISOString().substring(11,19);
+
+  // Local time
+  document.getElementById("localTime").textContent =
+    `${I18N[currentLang].localTimeLabel} ${nowLocal.toTimeString().substring(0,8)}`;
+
+  // Sync status
+  const syncEl = document.getElementById("syncStatus");
+  if (!lastSyncServerTime || lastFetchError) {
+    syncEl.classList.remove("sync-ok","sync-warn");
+    syncEl.classList.add("sync-bad");
+    syncEl.textContent = I18N[currentLang].syncPrefix + " ERROR";
+  } else {
+    const diffSec = Math.round((nowServer - lastSyncServerTime)/1000);
+    let cls = "sync-ok";
+    if (diffSec > 60) cls = "sync-bad";
+    else if (diffSec > 20) cls = "sync-warn";
+    syncEl.classList.remove("sync-ok","sync-warn","sync-bad");
+    syncEl.classList.add(cls);
+    syncEl.textContent =
+      `${I18N[currentLang].syncPrefix} ${lastSyncServerTime.toISOString().substring(11,19)} UTC ` +
+      I18N[currentLang].syncAgo(diffSec);
+  }
+
+  // Phase
+  const phaseEl = document.getElementById("phaseLabel");
+  const start = new Date(BATTLE_START_UTC);
+  const minSinceStart = (nowServer - start) / 60000;
+  let phaseLabel = PHASES[0].label_en;
+  for (const ph of PHASES) {
+    if (minSinceStart >= ph.startMin && minSinceStart < ph.endMin) {
+      phaseLabel = currentLang === "pt" ? ph.label_pt : ph.label_en;
+      break;
+    }
+  }
+  phaseEl.textContent = phaseLabel;
 }
-setInterval(updateClock, 1000);
+setInterval(updateClockAndMeta, 1000);
 
 /* ========= HELPERS ========= */
 function minutesText(min) {
@@ -643,16 +820,19 @@ function renderPets() {
     const name = p.WhaleName || p.PlayerName || "-";
     const win  = buildOwnWindow(p);
     let winText = "-";
+    let warning = false;
     if (win) {
       const s = win.start.toISOString().substring(11,16);
       const e = win.end.toISOString().substring(11,16);
       winText = `${s} - ${e}`;
+    } else {
+      warning = true;
     }
     const st = petStatus(p);
 
     tbody.innerHTML += `
-      <tr>
-        <td>${name}</td>
+      <tr class="${warning ? "row-warning" : ""}">
+        <td>${warning ? "⚠️ " : ""}${name}</td>
         <td>${winText}</td>
         <td><span class="pet-badge pet-badge--${st.type}">${st.label}</span></td>
       </tr>`;
@@ -662,6 +842,8 @@ function renderPets() {
 function renderEnemyPets() {
   const tbody = document.getElementById("enemyPetsTableBody");
   tbody.innerHTML = "";
+
+  let activeCount = 0, notUsedCount = 0, expiredCount = 0;
 
   enemySchedule.forEach(p => {
     const name = p.WhaleName || p.PlayerName || "-";
@@ -673,6 +855,9 @@ function renderEnemyPets() {
       winText = `${s} - ${e}`;
     }
     const st = enemyPetStatus(p);
+    if (st.type === "critical" || st.type === "soon" || st.type === "active") activeCount++;
+    else if (st.type === "upcoming") notUsedCount++;
+    else if (st.type === "expired") expiredCount++;
 
     tbody.innerHTML += `
       <tr>
@@ -681,6 +866,10 @@ function renderEnemyPets() {
         <td><span class="pet-badge pet-badge--${st.type}">${st.label}</span></td>
       </tr>`;
   });
+
+  const t = I18N[currentLang];
+  document.getElementById("enemySummary").textContent =
+    t.enemySummary(activeCount, notUsedCount, expiredCount);
 }
 
 function renderRallies() {
@@ -688,10 +877,14 @@ function renderRallies() {
   tbody.innerHTML = "";
 
   planRows.forEach((r,i) => {
+    const mt = Number(r.MarchTimeSec);
+    const invalid = !isFinite(mt) || mt <= 5;
+    const playerName = (invalid ? "⚠️ " : "") + r.PlayerName;
+
     tbody.innerHTML += `
-      <tr>
+      <tr class="${invalid ? "row-warning" : ""}">
         <td><span class="order-badge">${r.CallOrder}</span></td>
-        <td>${r.PlayerName}${i===0?'<span class="first-tag">First</span>':''}</td>
+        <td>${playerName}${i===0?'<span class="first-tag">First</span>':''}</td>
         <td>${r.MarchTimeSec}</td>
         <td>${r.OffsetVsFirstSec}s</td>
       </tr>`;
@@ -720,12 +913,9 @@ function updateTicker() {
     else if (mStart>0 && mStart<5) upcoming.push(name);
   });
 
-  if (expired.length) {
-    text.textContent = t.tickerExpired(expired.join(", "));
-    ticker.className = "ticker ticker--danger";
-  }
-  else if (expiring.length) {
-    text.textContent = t.tickerExpiring(expiring.join(", "));
+  if (expired.length || expiring.length) {
+    const names = expired.concat(expiring).join(", ");
+    text.textContent = t.tickerExpired(names);
     ticker.className = "ticker ticker--danger";
   }
   else if (upcoming.length) {
@@ -808,32 +998,43 @@ document.getElementById("langToggle").addEventListener("click", (e) => {
 
 /* ========= FETCH DATA ========= */
 async function fetchData() {
-  const res = await fetch(API_URL + "?t=" + Date.now());
-  const data = await res.json();
+  try {
+    const res = await fetch(API_URL + "?t=" + Date.now());
+    const data = await res.json();
 
-  if (data.updated) {
-    serverRefDate = new Date(data.updated);
-    const server = serverRefDate.getTime();
-    const local  = Date.now();
-    serverOffsetMs = server - local;
+    lastFetchError = false;
+    document.getElementById("errorBanner").style.display = "none";
+
+    if (data.updated) {
+      serverRefDate = new Date(data.updated);
+      const server = serverRefDate.getTime();
+      const local  = Date.now();
+      serverOffsetMs = server - local;
+      lastSyncServerTime = new Date(server);
+    }
+
+    planRows      = data.plan      || data.rows || [];
+    petSchedule   = data.pets      || [];
+    enemySchedule = data.enemyPets || [];
+
+    renderRallies();
+    renderPets();
+    renderEnemyPets();
+    updateTicker();
+    generateChatText();
+    updateClockAndMeta();
+  } catch (err) {
+    console.error("Fetch error", err);
+    lastFetchError = true;
+    document.getElementById("errorBanner").style.display = "block";
   }
-
-  planRows      = data.plan      || data.rows || [];
-  petSchedule   = data.pets      || [];
-  enemySchedule = data.enemyPets || [];
-
-  renderRallies();
-  renderPets();
-  renderEnemyPets();
-  updateTicker();
-  generateChatText();
-  updateClock();
 }
 
 /* ========= INIT ========= */
 applyStaticTranslations();
 setInterval(fetchData, 10000);
 fetchData();
+updateClockAndMeta();
 </script>
 </body>
 </html>
