@@ -418,6 +418,22 @@ textarea {
   background: radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,0.9));
 }
 
+/* Phase selector */
+#phaseSelector {
+  display: inline-flex;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+#phaseSelector .btn {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.8rem;
+}
+#phaseSelector .btn.active-phase {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 12px rgba(59,130,246,0.6);
+}
+
 /* Enemy summary */
 .enemy-summary {
   margin-top: 0.45rem;
@@ -487,7 +503,14 @@ textarea {
     <div class="card">
       <div class="card-title" id="rallyCardTitle">Rally Timing</div>
       <div class="card-subtitle" id="rallyCardSubtitle">
-        Based on march times from Plan sheet.
+        Based on march times from Plan sheet. VIP whales per phase from Roles tab.
+      </div>
+
+      <!-- Phase selector -->
+      <div id="phaseSelector">
+        <button type="button" class="btn secondary" data-phase="1">Phase 1</button>
+        <button type="button" class="btn secondary" data-phase="2">Phase 2</button>
+        <button type="button" class="btn secondary" data-phase="3">Phase 3</button>
       </div>
 
       <table class="rally-table">
@@ -583,9 +606,9 @@ const BATTLE_START_UTC = "2025-12-06T12:00:00Z";
 
 // Phases relative to start (in minutes)
 const PHASES = [
-  { label_en: "Pre-battle", label_pt: "Pré-batalha", startMin: -60, endMin: 0 },
-  { label_en: "Phase 1 – Setup", label_pt: "Fase 1 – Setup", startMin: 0, endMin: 90 },
-  { label_en: "Phase 2 – Push", label_pt: "Fase 2 – Push", startMin: 90, endMin: 210 },
+  { label_en: "Pre-battle",      label_pt: "Pré-batalha",      startMin: -60, endMin: 0   },
+  { label_en: "Phase 1 – Setup", label_pt: "Fase 1 – Setup",   startMin: 0,   endMin: 90  },
+  { label_en: "Phase 2 – Push",  label_pt: "Fase 2 – Push",    startMin: 90,  endMin: 210 },
   { label_en: "Phase 3 – Endgame", label_pt: "Fase 3 – Endgame", startMin: 210, endMin: 300 },
   { label_en: "Battle finished", label_pt: "Batalha terminada", startMin: 300, endMin: 600 }
 ];
@@ -603,7 +626,7 @@ const I18N = {
     tickerExpired: names => `${names} pets EXPIRING / EXPIRED – update marches!`,
     tickerUpcoming: names => `${names} pets activate soon`,
     rallyCardTitle: "Rally Timing",
-    rallyCardSubtitle: "Based on march times from Plan sheet.",
+    rallyCardSubtitle: "Based on march times from Plan sheet. VIP whales per phase from Roles tab.",
     ourPetsTitle: "Our Pets – All Whales",
     ourPetsSubtitle: "From Pets tab. Start time only, dashboard assumes 2h duration.",
     enemyPetsTitle: "Enemy Pets – Opponent Whales",
@@ -643,7 +666,7 @@ const I18N = {
     tickerExpired: names => `Pets de ${names} EXPIRANDO / EXPIRADOS – ajustem as marchas!`,
     tickerUpcoming: names => `Pets de ${names} serão ativados em breve`,
     rallyCardTitle: "Tempo de Rally",
-    rallyCardSubtitle: "Com base nos tempos de marcha da aba Plan.",
+    rallyCardSubtitle: "Com base nos tempos de marcha da aba Plan. Baleias VIP por fase definidas em Roles.",
     ourPetsTitle: "Nossos Pets – Todas as Baleias",
     ourPetsSubtitle: "Da aba Pets. Só horário de início, duração de 2h.",
     enemyPetsTitle: "Pets do Inimigo – Baleias Adversárias",
@@ -676,15 +699,31 @@ const I18N = {
 
 let currentLang = "en";
 
+let allPlanRows = [];
 let planRows = [];
 let petSchedule = [];
 let enemySchedule = [];
+let rolesMap = {};
+let selectedPhase = 1;
+
 let serverOffsetMs = 0;
 let serverRefDate = null;
 let lastSyncServerTime = null;
 let lastFetchError = false;
 
-/* ========= CLOCK ========= */
+/* ========= CLOCK & PHASE ========= */
+function autoDetectPhase() {
+  const nowServer = new Date(Date.now() + serverOffsetMs);
+  const start = new Date(BATTLE_START_UTC);
+  const minSinceStart = (nowServer - start) / 60000;
+
+  if (minSinceStart < 0) return 1;
+  if (minSinceStart < 90) return 1;      // first 1.5h
+  if (minSinceStart < 210) return 2;     // next 2h
+  if (minSinceStart < 300) return 3;     // last 1.5h
+  return 3;
+}
+
 function updateClockAndMeta() {
   const nowLocal = new Date();
   const nowServer = new Date(Date.now() + serverOffsetMs);
@@ -713,7 +752,7 @@ function updateClockAndMeta() {
       I18N[currentLang].syncAgo(diffSec);
   }
 
-  // Phase
+  // Phase label
   const phaseEl = document.getElementById("phaseLabel");
   const start = new Date(BATTLE_START_UTC);
   const minSinceStart = (nowServer - start) / 60000;
@@ -811,6 +850,20 @@ function enemyPetStatus(p) {
   return { label: t.statusActiveLeft(minutesText(mEnd)), type:"active" };
 }
 
+/* ========= PLAN FILTER BY PHASE & ROLES ========= */
+function filteredPlanForPhase(phaseNumber) {
+  const p = Number(phaseNumber) || 1;
+  return allPlanRows
+    .filter(r => {
+      const name = (r.PlayerName || r.playername || "").trim();
+      if (!name) return false;
+      const roleInfo = rolesMap[name];
+      if (!roleInfo) return false;
+      return (roleInfo[p] === "VIP");    // only VIP whales for this phase
+    })
+    .sort((a,b) => Number(a.CallOrder || 0) - Number(b.CallOrder || 0));
+}
+
 /* ========= RENDERERS ========= */
 function renderPets() {
   const tbody = document.getElementById("petsTableBody");
@@ -876,6 +929,11 @@ function renderRallies() {
   const tbody = document.getElementById("rallyTableBody");
   tbody.innerHTML = "";
 
+  if (!planRows.length) {
+    tbody.innerHTML = `<tr><td colspan="4">No VIP whales configured for this phase.</td></tr>`;
+    return;
+  }
+
   planRows.forEach((r,i) => {
     const mt = Number(r.MarchTimeSec);
     const invalid = !isFinite(mt) || mt <= 5;
@@ -931,6 +989,12 @@ function updateTicker() {
 /* ========= CHAT MACRO ========= */
 function generateChatText() {
   const t = I18N[currentLang];
+  if (!planRows.length) {
+    document.getElementById("shareText").value =
+      t.chatHeader + "\n\n(No VIP whales configured for this phase.)";
+    return;
+  }
+
   let lines = [t.chatHeader, ""];
 
   planRows.forEach((r,i) => {
@@ -996,6 +1060,25 @@ document.getElementById("langToggle").addEventListener("click", (e) => {
   updateTicker();
 });
 
+/* ========= PHASE SELECTOR ========= */
+function syncPhaseButtons() {
+  const btn = document.querySelector(`#phaseSelector .btn[data-phase="${selectedPhase}"]`);
+  if (!btn) return;
+  document.querySelectorAll("#phaseSelector .btn").forEach(b => b.classList.remove("active-phase"));
+  btn.classList.add("active-phase");
+}
+
+document.getElementById("phaseSelector").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-phase]");
+  if (!btn) return;
+  selectedPhase = Number(btn.getAttribute("data-phase")) || 1;
+  syncPhaseButtons();
+
+  planRows = filteredPlanForPhase(selectedPhase);
+  renderRallies();
+  generateChatText();
+});
+
 /* ========= FETCH DATA ========= */
 async function fetchData() {
   try {
@@ -1013,9 +1096,28 @@ async function fetchData() {
       lastSyncServerTime = new Date(server);
     }
 
-    planRows      = data.plan      || data.rows || [];
+    allPlanRows   = data.plan      || data.rows || [];
     petSchedule   = data.pets      || [];
     enemySchedule = data.enemyPets || [];
+
+    const rolesArr = data.roles || [];
+    rolesMap = {};
+    rolesArr.forEach(r => {
+      const name = (r.PlayerName || r.playername || "").trim();
+      if (!name) return;
+      rolesMap[name] = {
+        1: (r.Phase1 || "").toString().toUpperCase(),
+        2: (r.Phase2 || "").toString().toUpperCase(),
+        3: (r.Phase3 || "").toString().toUpperCase()
+      };
+    });
+
+    if (!window.__phaseInitialized) {
+      selectedPhase = autoDetectPhase();
+      window.__phaseInitialized = true;
+    }
+
+    planRows = filteredPlanForPhase(selectedPhase);
 
     renderRallies();
     renderPets();
@@ -1023,6 +1125,7 @@ async function fetchData() {
     updateTicker();
     generateChatText();
     updateClockAndMeta();
+    syncPhaseButtons();
   } catch (err) {
     console.error("Fetch error", err);
     lastFetchError = true;
