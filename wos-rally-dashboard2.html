@@ -418,12 +418,21 @@ textarea {
   background: radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,0.9));
 }
 
+/* Phase + Alliance selector row */
+.selector-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
 /* Phase selector */
 #phaseSelector {
   display: inline-flex;
   gap: 0.4rem;
-  margin-top: 0.5rem;
-  margin-bottom: 0.4rem;
 }
 #phaseSelector .btn {
   font-size: 0.75rem;
@@ -432,6 +441,28 @@ textarea {
 #phaseSelector .btn.active-phase {
   border-color: var(--accent-blue);
   box-shadow: 0 0 12px rgba(59,130,246,0.6);
+}
+#phaseSelector .btn.current-phase {
+  outline: 2px solid var(--accent-yellow);
+}
+
+/* Alliance selector */
+#allianceSelector {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+#allianceLabel {
+  font-size: 0.75rem;
+  color: var(--sub);
+}
+#allianceSelector .btn {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.7rem;
+}
+#allianceSelector .btn.active-alliance {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 10px rgba(59,130,246,0.6);
 }
 
 /* Enemy summary */
@@ -466,7 +497,7 @@ textarea {
         <span class="badge" id="badgeText">Rallies & Pets</span>
       </h1>
       <div class="subtitle" id="subtitleText">
-        Left: Rally sync. Right: our pets & enemy pets.
+        Left: Rally sync (phases + alliance). Right: our pets & enemy pets.
       </div>
     </div>
     <div class="lang-toggle" id="langToggle">
@@ -503,14 +534,23 @@ textarea {
     <div class="card">
       <div class="card-title" id="rallyCardTitle">Rally Timing</div>
       <div class="card-subtitle" id="rallyCardSubtitle">
-        Based on march times from Plan sheet. VIP whales per phase from Roles tab.
+        Based on march times from Plan sheet. VIP/HOE per phase from Roles tab.
       </div>
 
-      <!-- Phase selector -->
-      <div id="phaseSelector">
-        <button type="button" class="btn secondary" data-phase="1">Phase 1</button>
-        <button type="button" class="btn secondary" data-phase="2">Phase 2</button>
-        <button type="button" class="btn secondary" data-phase="3">Phase 3</button>
+      <div class="selector-row">
+        <!-- Phase selector -->
+        <div id="phaseSelector">
+          <button type="button" class="btn secondary" data-phase="1">Phase 1</button>
+          <button type="button" class="btn secondary" data-phase="2">Phase 2</button>
+          <button type="button" class="btn secondary" data-phase="3">Phase 3</button>
+        </div>
+
+        <!-- Alliance selector -->
+        <div id="allianceSelector">
+          <span id="allianceLabel">Alliance</span>
+          <button type="button" class="btn secondary" data-ally="VIP">VIP</button>
+          <button type="button" class="btn secondary" data-ally="HOE">HOE</button>
+        </div>
       </div>
 
       <table class="rally-table">
@@ -606,11 +646,11 @@ const BATTLE_START_UTC = "2025-12-06T12:00:00Z";
 
 // Phases relative to start (in minutes)
 const PHASES = [
-  { label_en: "Pre-battle",      label_pt: "Pré-batalha",      startMin: -60, endMin: 0   },
-  { label_en: "Phase 1 – Setup", label_pt: "Fase 1 – Setup",   startMin: 0,   endMin: 90  },
-  { label_en: "Phase 2 – Push",  label_pt: "Fase 2 – Push",    startMin: 90,  endMin: 210 },
-  { label_en: "Phase 3 – Endgame", label_pt: "Fase 3 – Endgame", startMin: 210, endMin: 300 },
-  { label_en: "Battle finished", label_pt: "Batalha terminada", startMin: 300, endMin: 600 }
+  { label_en: "Pre-battle",         label_pt: "Pré-batalha",        startMin: -60, endMin: 0   },
+  { label_en: "Phase 1 – Setup",    label_pt: "Fase 1 – Setup",     startMin: 0,   endMin: 90  },
+  { label_en: "Phase 2 – Push",     label_pt: "Fase 2 – Push",      startMin: 90,  endMin: 210 },
+  { label_en: "Phase 3 – Endgame",  label_pt: "Fase 3 – Endgame",   startMin: 210, endMin: 300 },
+  { label_en: "Battle finished",    label_pt: "Batalha terminada",  startMin: 300, endMin: 600 }
 ];
 
 /* ========= I18N STRINGS ========= */
@@ -618,7 +658,7 @@ const I18N = {
   en: {
     title: "Whiteout Survival – Battle Dashboard",
     badge: "Rallies & Pets",
-    subtitle: "Left: Rally sync. Right: our pets & enemy pets.",
+    subtitle: "Left: Rally sync (phases + alliance). Right: our pets & enemy pets.",
     battleTimeLabel: "Battle Time (UTC)",
     tickerLabel: "Pet Alert",
     tickerIdle: "No pet changes in the next 15 minutes.",
@@ -626,7 +666,7 @@ const I18N = {
     tickerExpired: names => `${names} pets EXPIRING / EXPIRED – update marches!`,
     tickerUpcoming: names => `${names} pets activate soon`,
     rallyCardTitle: "Rally Timing",
-    rallyCardSubtitle: "Based on march times from Plan sheet. VIP whales per phase from Roles tab.",
+    rallyCardSubtitle: "Based on march times from Plan sheet. VIP/HOE per phase from Roles tab.",
     ourPetsTitle: "Our Pets – All Whales",
     ourPetsSubtitle: "From Pets tab. Start time only, dashboard assumes 2h duration.",
     enemyPetsTitle: "Enemy Pets – Opponent Whales",
@@ -653,12 +693,13 @@ const I18N = {
     syncAgo: secs => `(${secs}s ago)`,
     localTimeLabel: "Your local time:",
     enemySummary: (a, n, e) =>
-      `Enemy pets: ${a} active | ${n} not used yet | ${e} expired`
+      `Enemy pets: ${a} active | ${n} not used yet | ${e} expired`,
+    allianceLabel: "Alliance"
   },
   pt: {
     title: "Whiteout Survival – Painel de Batalha",
     badge: "Rallies & Pets",
-    subtitle: "Esquerda: sincronização de rallies. Direita: nossos pets e pets do inimigo.",
+    subtitle: "Esquerda: sincronização de rallies (fases + aliança). Direita: nossos pets e pets do inimigo.",
     battleTimeLabel: "Hora de Batalha (UTC)",
     tickerLabel: "Alerta de Pets",
     tickerIdle: "Sem mudanças de pets nos próximos 15 minutos.",
@@ -666,7 +707,7 @@ const I18N = {
     tickerExpired: names => `Pets de ${names} EXPIRANDO / EXPIRADOS – ajustem as marchas!`,
     tickerUpcoming: names => `Pets de ${names} serão ativados em breve`,
     rallyCardTitle: "Tempo de Rally",
-    rallyCardSubtitle: "Com base nos tempos de marcha da aba Plan. Baleias VIP por fase definidas em Roles.",
+    rallyCardSubtitle: "Com base nos tempos de marcha da aba Plan. VIP/HOE por fase definidos em Roles.",
     ourPetsTitle: "Nossos Pets – Todas as Baleias",
     ourPetsSubtitle: "Da aba Pets. Só horário de início, duração de 2h.",
     enemyPetsTitle: "Pets do Inimigo – Baleias Adversárias",
@@ -693,7 +734,8 @@ const I18N = {
     syncAgo: secs => `(${secs}s atrás)`,
     localTimeLabel: "Sua hora local:",
     enemySummary: (a, n, e) =>
-      `Pets do inimigo: ${a} ativos | ${n} ainda não usados | ${e} expirados`
+      `Pets do inimigo: ${a} ativos | ${n} ainda não usados | ${e} expirados`,
+    allianceLabel: "Aliança"
   }
 };
 
@@ -705,6 +747,7 @@ let petSchedule = [];
 let enemySchedule = [];
 let rolesMap = {};
 let selectedPhase = 1;
+let selectedAlliance = "VIP";
 
 let serverOffsetMs = 0;
 let serverRefDate = null;
@@ -722,6 +765,14 @@ function autoDetectPhase() {
   if (minSinceStart < 210) return 2;     // next 2h
   if (minSinceStart < 300) return 3;     // last 1.5h
   return 3;
+}
+
+function markCurrentPhaseButton(currentPhase) {
+  document.querySelectorAll("#phaseSelector .btn").forEach(btn => {
+    const p = Number(btn.getAttribute("data-phase")) || 0;
+    if (p === currentPhase) btn.classList.add("current-phase");
+    else btn.classList.remove("current-phase");
+  });
 }
 
 function updateClockAndMeta() {
@@ -752,7 +803,7 @@ function updateClockAndMeta() {
       I18N[currentLang].syncAgo(diffSec);
   }
 
-  // Phase label
+  // Phase label + current-phase button highlight
   const phaseEl = document.getElementById("phaseLabel");
   const start = new Date(BATTLE_START_UTC);
   const minSinceStart = (nowServer - start) / 60000;
@@ -764,6 +815,9 @@ function updateClockAndMeta() {
     }
   }
   phaseEl.textContent = phaseLabel;
+
+  const currentPhase = autoDetectPhase();
+  markCurrentPhaseButton(currentPhase);
 }
 setInterval(updateClockAndMeta, 1000);
 
@@ -850,16 +904,18 @@ function enemyPetStatus(p) {
   return { label: t.statusActiveLeft(minutesText(mEnd)), type:"active" };
 }
 
-/* ========= PLAN FILTER BY PHASE & ROLES ========= */
-function filteredPlanForPhase(phaseNumber) {
+/* ========= PLAN FILTER BY PHASE & ALLIANCE ========= */
+function filteredPlanForPhaseAlliance(phaseNumber, alliance) {
   const p = Number(phaseNumber) || 1;
+  const a = (alliance || "VIP").toUpperCase();
   return allPlanRows
     .filter(r => {
       const name = (r.PlayerName || r.playername || "").trim();
       if (!name) return false;
       const roleInfo = rolesMap[name];
       if (!roleInfo) return false;
-      return (roleInfo[p] === "VIP");    // only VIP whales for this phase
+      const role = (roleInfo[p] || "").toUpperCase();
+      return role === a;
     })
     .sort((a,b) => Number(a.CallOrder || 0) - Number(b.CallOrder || 0));
 }
@@ -930,7 +986,7 @@ function renderRallies() {
   tbody.innerHTML = "";
 
   if (!planRows.length) {
-    tbody.innerHTML = `<tr><td colspan="4">No VIP whales configured for this phase.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4">No whales configured for this phase/alliance.</td></tr>`;
     return;
   }
 
@@ -991,7 +1047,7 @@ function generateChatText() {
   const t = I18N[currentLang];
   if (!planRows.length) {
     document.getElementById("shareText").value =
-      t.chatHeader + "\n\n(No VIP whales configured for this phase.)";
+      t.chatHeader + "\n\n(No whales configured for this phase/alliance.)";
     return;
   }
 
@@ -1025,6 +1081,7 @@ function applyStaticTranslations() {
   document.getElementById("enemyPetsSubtitle").textContent = t.enemyPetsSubtitle;
   document.getElementById("chatTitle").textContent = t.chatTitle;
   document.getElementById("copyBtn").textContent = t.copyButton;
+  document.getElementById("allianceLabel").textContent = t.allianceLabel;
 
   document.getElementById("hdrRallyOrder").textContent  = t.tableRallyOrder;
   document.getElementById("hdrRallyPlayer").textContent = t.tableRallyPlayer;
@@ -1062,10 +1119,11 @@ document.getElementById("langToggle").addEventListener("click", (e) => {
 
 /* ========= PHASE SELECTOR ========= */
 function syncPhaseButtons() {
-  const btn = document.querySelector(`#phaseSelector .btn[data-phase="${selectedPhase}"]`);
-  if (!btn) return;
-  document.querySelectorAll("#phaseSelector .btn").forEach(b => b.classList.remove("active-phase"));
-  btn.classList.add("active-phase");
+  document.querySelectorAll("#phaseSelector .btn").forEach(b => {
+    b.classList.remove("active-phase");
+    const p = Number(b.getAttribute("data-phase")) || 0;
+    if (p === selectedPhase) b.classList.add("active-phase");
+  });
 }
 
 document.getElementById("phaseSelector").addEventListener("click", (e) => {
@@ -1074,7 +1132,27 @@ document.getElementById("phaseSelector").addEventListener("click", (e) => {
   selectedPhase = Number(btn.getAttribute("data-phase")) || 1;
   syncPhaseButtons();
 
-  planRows = filteredPlanForPhase(selectedPhase);
+  planRows = filteredPlanForPhaseAlliance(selectedPhase, selectedAlliance);
+  renderRallies();
+  generateChatText();
+});
+
+/* ========= ALLIANCE SELECTOR ========= */
+function syncAllianceButtons() {
+  document.querySelectorAll("#allianceSelector .btn").forEach(b => {
+    b.classList.remove("active-alliance");
+    const a = (b.getAttribute("data-ally") || "").toUpperCase();
+    if (a === selectedAlliance.toUpperCase()) b.classList.add("active-alliance");
+  });
+}
+
+document.getElementById("allianceSelector").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-ally]");
+  if (!btn) return;
+  selectedAlliance = (btn.getAttribute("data-ally") || "VIP").toUpperCase();
+  syncAllianceButtons();
+
+  planRows = filteredPlanForPhaseAlliance(selectedPhase, selectedAlliance);
   renderRallies();
   generateChatText();
 });
@@ -1117,7 +1195,7 @@ async function fetchData() {
       window.__phaseInitialized = true;
     }
 
-    planRows = filteredPlanForPhase(selectedPhase);
+    planRows = filteredPlanForPhaseAlliance(selectedPhase, selectedAlliance);
 
     renderRallies();
     renderPets();
@@ -1126,6 +1204,7 @@ async function fetchData() {
     generateChatText();
     updateClockAndMeta();
     syncPhaseButtons();
+    syncAllianceButtons();
   } catch (err) {
     console.error("Fetch error", err);
     lastFetchError = true;
@@ -1138,7 +1217,7 @@ applyStaticTranslations();
 setInterval(fetchData, 10000);
 fetchData();
 updateClockAndMeta();
+syncAllianceButtons();
 </script>
 </body>
 </html>
-
