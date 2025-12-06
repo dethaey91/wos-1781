@@ -152,11 +152,11 @@ h1 {
   text-shadow: 0 0 18px rgba(148,197,255,0.6);
 }
 
-/* Sync & local time */
+/* Sync & local time + refresh */
 .clock-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.35rem;
 }
 .sync-status {
   font-size: 0.8rem;
@@ -184,6 +184,14 @@ h1 {
 .local-time {
   font-size: 0.8rem;
   color: #9ca3af;
+}
+.refresh-row {
+  display: flex;
+  justify-content: flex-start;
+}
+.btn-refresh {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.7rem;
 }
 
 /* Phase strip */
@@ -323,7 +331,7 @@ th, td {
   color: #bbf7d0;
 }
 
-/* Pet badges (with emoji semantics) */
+/* Pet badges */
 .pet-badge {
   padding: 0.15rem 0.55rem;
   border-radius: 0.8rem;
@@ -335,12 +343,12 @@ th, td {
   border-color: var(--accent-green);
   color: #bbf7d0;
 }
-.pet-badge--soon {  /* <15m remaining */
+.pet-badge--soon {
   background: rgba(234,179,8,0.18);
   border-color: var(--accent-yellow);
   color: #facc15;
 }
-.pet-badge--critical { /* <5m remaining */
+.pet-badge--critical {
   background: rgba(248,113,113,0.18);
   border-color: var(--accent-red);
   color: #fecaca;
@@ -520,6 +528,9 @@ textarea {
       </div>
       <div id="localTime" class="local-time">
         Your local time: --:--:--
+      </div>
+      <div class="refresh-row">
+        <button id="refreshBtn" class="btn secondary btn-refresh" type="button">⟳ Refresh</button>
       </div>
     </div>
   </div>
@@ -904,20 +915,46 @@ function enemyPetStatus(p) {
   return { label: t.statusActiveLeft(minutesText(mEnd)), type:"active" };
 }
 
-/* ========= PLAN FILTER BY PHASE & ALLIANCE ========= */
+/* ========= PLAN FILTER BY PHASE & ALLIANCE (recompute order + offsets) ========= */
 function filteredPlanForPhaseAlliance(phaseNumber, alliance) {
   const p = Number(phaseNumber) || 1;
   const a = (alliance || "VIP").toUpperCase();
-  return allPlanRows
-    .filter(r => {
-      const name = (r.PlayerName || r.playername || "").trim();
-      if (!name) return false;
-      const roleInfo = rolesMap[name];
-      if (!roleInfo) return false;
-      const role = (roleInfo[p] || "").toUpperCase();
-      return role === a;
-    })
-    .sort((a,b) => Number(a.CallOrder || 0) - Number(b.CallOrder || 0));
+
+  // 1) Filter by Roles: only whales whose role in that phase matches alliance
+  let subset = allPlanRows.filter(r => {
+    const name = (r.PlayerName || r.playername || "").trim();
+    if (!name) return false;
+    const roleInfo = rolesMap[name];
+    if (!roleInfo) return false;
+    const role = (roleInfo[p] || "").toUpperCase();
+    return role === a;   // VIP or HOE
+  });
+
+  if (!subset.length) return [];
+
+  // 2) Sort by MarchTimeSec: slowest first (so they call first)
+  subset = subset.slice().sort((a, b) => {
+    const ma = Number(a.MarchTimeSec || 0);
+    const mb = Number(b.MarchTimeSec || 0);
+    return mb - ma; // descending
+  });
+
+  // 3) Compute alliance-specific call order and offsets
+  const maxMarch = Math.max(
+    ...subset.map(r => Number(r.MarchTimeSec || 0))
+  );
+
+  return subset.map((r, idx) => {
+    const march = Number(r.MarchTimeSec || 0);
+    const valid = isFinite(march) && march > 0;
+    const offset = valid ? (maxMarch - march) : 0;
+
+    return {
+      ...r,
+      _CallOrder: idx + 1,              // alliance-specific order
+      _OffsetSec: Math.round(offset)    // alliance-specific offset vs slowest
+    };
+  });
 }
 
 /* ========= RENDERERS ========= */
@@ -994,13 +1031,15 @@ function renderRallies() {
     const mt = Number(r.MarchTimeSec);
     const invalid = !isFinite(mt) || mt <= 5;
     const playerName = (invalid ? "⚠️ " : "") + r.PlayerName;
+    const order = r._CallOrder || (i + 1);
+    const offset = (typeof r._OffsetSec === "number" ? r._OffsetSec : 0);
 
     tbody.innerHTML += `
       <tr class="${invalid ? "row-warning" : ""}">
-        <td><span class="order-badge">${r.CallOrder}</span></td>
+        <td><span class="order-badge">${order}</span></td>
         <td>${playerName}${i===0?'<span class="first-tag">First</span>':''}</td>
         <td>${r.MarchTimeSec}</td>
-        <td>${r.OffsetVsFirstSec}s</td>
+        <td>${offset}s</td>
       </tr>`;
   });
 }
@@ -1054,8 +1093,9 @@ function generateChatText() {
   let lines = [t.chatHeader, ""];
 
   planRows.forEach((r,i) => {
+    const offset = (typeof r._OffsetSec === "number" ? r._OffsetSec : 0);
     if (i===0) lines.push(t.chatLineFirst(r.PlayerName));
-    else lines.push(t.chatLineOther(r.PlayerName, r.OffsetVsFirstSec));
+    else lines.push(t.chatLineOther(r.PlayerName, offset));
   });
 
   document.getElementById("shareText").value = lines.join("\n");
@@ -1155,6 +1195,11 @@ document.getElementById("allianceSelector").addEventListener("click", (e) => {
   planRows = filteredPlanForPhaseAlliance(selectedPhase, selectedAlliance);
   renderRallies();
   generateChatText();
+});
+
+/* ========= FORCE REFRESH BUTTON ========= */
+document.getElementById("refreshBtn").addEventListener("click", () => {
+  fetchData();
 });
 
 /* ========= FETCH DATA ========= */
