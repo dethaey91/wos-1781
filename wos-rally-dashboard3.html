@@ -19,6 +19,21 @@
   --accent-green: rgba(34,197,94,0.95);
 }
 
+.banner {
+  width: 100%;
+  max-width: 1250px;
+  margin: 0 auto 1.5rem auto;
+  border-radius: 1.2rem;
+  overflow: hidden;
+  border: 1px solid rgba(148,163,184,0.35);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.45);
+}
+
+.banner img {
+  width: 100%;
+  display: block;
+}
+  
 /* Alliance color modes */
 .mode-vip {
   --accent-blue: rgba(96,165,250,0.95);
@@ -740,6 +755,11 @@ textarea {
 </head>
 
 <body class="mode-vip">
+
+<div class="banner">
+  <img src="banner.png" alt="Whiteout Survival Battle Banner">
+</div>
+  
 <div class="app">
   <div class="structure-layer"></div>
 
@@ -1562,4 +1582,5 @@ syncAllianceButtons();
 </script>
 </body>
 </html>
+
 
