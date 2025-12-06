@@ -19,24 +19,6 @@
   --accent-green: rgba(34,197,94,0.95);
 }
 
-.banner {
-  width: 100%;
-  max-width: 1250px;
-  margin: 0 auto 1rem auto;
-  border-radius: 1rem;
-  overflow: hidden;
-  border: 1px solid rgba(148,163,184,0.35);
-  box-shadow: 0 8px 18px rgba(0,0,0,0.45);
-  height: 180px;                  /* Slim strip */
-}
-
-.banner img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;              /* Crops vertically */
-  object-position: center 30%;    /* Shows more castle + action */
-}
-  
 /* Alliance color modes */
 .mode-vip {
   --accent-blue: rgba(96,165,250,0.95);
@@ -52,8 +34,23 @@ body {
   background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
   color: var(--text);
   display: flex;
-  flex-direction: column;   /* 🔵 add this */
-  align-items: center;      /* 🔵 center banner + app */
+  flex-direction: column;   /* banner on top, app below */
+  align-items: center;
+}
+
+/* Optional banner (slim strip) – you can remove if not using */
+.banner {
+  width: 100%;
+  max-width: 1250px;
+  margin: 0 auto 1rem auto;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(148,163,184,0.35);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.45);
+}
+.banner img {
+  width: 100%;
+  display: block;
 }
 
 /* Command center wrapper */
@@ -68,7 +65,7 @@ body {
   isolation: isolate;
 }
 
-/* Background layers: grid + glow + vague structures */
+/* Background layers: grid + glow */
 .app::before {
   content: "";
   position: absolute;
@@ -94,10 +91,7 @@ body {
   z-index: -4;
 }
 
-/* Subtle fortress silhouettes */
-.app::marker, .app::selection { /* just to avoid misuse */ }
-
-/* Silhouette using pseudo layer */
+/* Silhouette dark layer */
 .app > .structure-layer {
   position: absolute;
   inset: 0;
@@ -380,7 +374,7 @@ h1 {
   100% { transform: scale(1); }
 }
 
-/* Cards: metal panel look */
+/* Cards */
 .card {
   position: relative;
   background: radial-gradient(circle at top left, rgba(31,41,55,0.9), rgba(15,23,42,0.98));
@@ -447,14 +441,34 @@ h1 {
   letter-spacing: 0.02em;
 }
 
-/* Right column stacking */
+/* Info button (battle plan) */
+.info-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--border-soft);
+  background: rgba(15,23,42,0.8);
+  color: var(--text);
+  font-size: 0.9rem;
+  cursor: pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition: 0.15s ease;
+}
+.info-btn:hover {
+  background: rgba(96,165,250,0.3);
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 10px rgba(96,165,250,0.7);
+}
+
 .right-stack {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-/* Animated divider (between sections) */
+/* Animated divider */
 .divider {
   height: 2px;
   margin: 0.4rem 0;
@@ -500,7 +514,7 @@ th, td {
   padding: 0.5rem 0.6rem;
 }
 
-/* Rally alignment */
+/* Rally alignment – 1,2 left; 3,4,5 right */
 .rally-table th:nth-child(1),
 .rally-table td:nth-child(1),
 .rally-table th:nth-child(2),
@@ -510,7 +524,9 @@ th, td {
 .rally-table th:nth-child(3),
 .rally-table td:nth-child(3),
 .rally-table th:nth-child(4),
-.rally-table td:nth-child(4) {
+.rally-table td:nth-child(4),
+.rally-table th:nth-child(5),
+.rally-table td:nth-child(5) {
   text-align: right;
 }
 
@@ -545,7 +561,7 @@ th, td {
   box-shadow: 0 0 8px rgba(15,23,42,0.9);
 }
 
-/* First tag with subtle pulse */
+/* First tag */
 .first-tag {
   font-size: 0.7rem;
   padding: 0.1rem 0.35rem;
@@ -656,7 +672,7 @@ textarea {
   background: radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,0.9));
 }
 
-/* Phase + Alliance selector row */
+/* Selector row */
 .selector-row {
   display: flex;
   justify-content: space-between;
@@ -710,7 +726,7 @@ textarea {
   color: #9ca3af;
 }
 
-/* Legend with custom icons (dots) */
+/* Legend dots */
 .legend {
   margin-top: 0.4rem;
   font-size: 0.75rem;
@@ -755,11 +771,58 @@ textarea {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* Modal for battle plan */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  padding-top: 40px;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+}
+.modal-content {
+  margin: auto;
+  background: rgba(15,23,42,0.95);
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(148,163,184,0.4);
+  max-width: 90%;
+  max-height: 85%;
+  box-shadow: 0 0 25px rgba(0,0,0,0.8);
+  position: relative;
+}
+.modal-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  color: #fff;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.modal-close:hover {
+  color: #f87171;
+}
+.modal-image {
+  max-width: 100%;
+  max-height: 80vh;
+  display:block;
+  margin: 0 auto;
+  border-radius: 0.5rem;
+}
 </style>
 </head>
 
 <body class="mode-vip">
-  
+
+<!-- Optional banner; replace src or remove this block if not used -->
+<div class="banner">
+  <img src="banner.png" alt="Whiteout Survival Battle Banner">
+</div>
+
 <div class="app">
   <div class="structure-layer"></div>
 
@@ -817,25 +880,26 @@ textarea {
     <div class="card rally-card">
       <div class="rally-card-header">
         <div class="rally-icon"></div>
-        <div>
-          <div class="card-title" id="rallyCardTitle">Rally Timing</div>
-          <div class="card-subtitle" id="rallyCardSubtitle">
-            Based on march times from Plan sheet. VIP/HOE per phase from Roles tab.
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <div>
+            <div class="card-title" id="rallyCardTitle">Rally Timing</div>
+            <div class="card-subtitle" id="rallyCardSubtitle">
+              Based on march times from Plan sheet. VIP/HOE per phase from Roles tab.
+            </div>
           </div>
+          <button id="battlePlanBtn" class="info-btn" title="View Battle Plan">i</button>
         </div>
       </div>
 
       <div class="divider"></div>
 
       <div class="selector-row">
-        <!-- Phase selector -->
         <div id="phaseSelector">
           <button type="button" class="btn secondary" data-phase="1">Phase 1</button>
           <button type="button" class="btn secondary" data-phase="2">Phase 2</button>
           <button type="button" class="btn secondary" data-phase="3">Phase 3</button>
         </div>
 
-        <!-- Alliance selector -->
         <div id="allianceSelector">
           <span id="allianceLabel">Alliance</span>
           <button type="button" class="btn secondary" data-ally="VIP">VIP</button>
@@ -850,10 +914,11 @@ textarea {
             <th id="hdrRallyPlayer">Player</th>
             <th id="hdrRallyMarch">March (s)</th>
             <th id="hdrRallyOffset">Offset</th>
+            <th id="hdrRallyVoice">Voice counting</th>
           </tr>
         </thead>
         <tbody id="rallyTableBody">
-          <tr><td colspan="4">Loading…</td></tr>
+          <tr><td colspan="5">Loading…</td></tr>
         </tbody>
       </table>
 
@@ -934,8 +999,16 @@ textarea {
 
 <div id="copyToast" class="copy-toast">Copied to clipboard</div>
 
+<!-- BATTLE PLAN MODAL -->
+<div id="battlePlanModal" class="modal">
+  <div class="modal-content">
+    <span class="modal-close">&times;</span>
+    <img src="BattlePlan.png" alt="Master Battle Plan" class="modal-image">
+  </div>
+</div>
+
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyxyAZJahC4ouheWWMKt0KZ7fFW3PPkeTndnu3HSyuIyFZfIakN294TeC9nANU8Y5j-/exec";
+const API_URL = "YOUR_WEB_APP_URL_HERE";
 
 // Default battle start (UTC)
 const BATTLE_START_UTC = "2025-12-06T12:00:00Z";
@@ -949,7 +1022,7 @@ const PHASES = [
   { label_en: "Battle finished",    label_pt: "Batalha terminada",  startMin: 300, endMin: 600 }
 ];
 
-/* ========= I18N STRINGS ========= */
+/* ========= I18N ========= */
 const I18N = {
   en: {
     title: "Whiteout Survival – Battle Dashboard",
@@ -975,6 +1048,7 @@ const I18N = {
     tableRallyPlayer: "Player",
     tableRallyMarch: "March (s)",
     tableRallyOffset: "Offset",
+    tableRallyVoice: "Voice counting",
     tablePetWhale: "Whale",
     tablePetWindow: "Window",
     tablePetStatus: "Status",
@@ -1016,6 +1090,7 @@ const I18N = {
     tableRallyPlayer: "Jogador",
     tableRallyMarch: "Marcha (s)",
     tableRallyOffset: "Atraso",
+    tableRallyVoice: "Contagem em voz",
     tablePetWhale: "Baleia",
     tablePetWindow: "Janela",
     tablePetStatus: "Status",
@@ -1057,9 +1132,9 @@ function autoDetectPhase() {
   const minSinceStart = (nowServer - start) / 60000;
 
   if (minSinceStart < 0) return 1;
-  if (minSinceStart < 90) return 1;      // first 1.5h
-  if (minSinceStart < 210) return 2;     // next 2h
-  if (minSinceStart < 300) return 3;     // last 1.5h
+  if (minSinceStart < 90) return 1;
+  if (minSinceStart < 210) return 2;
+  if (minSinceStart < 300) return 3;
   return 3;
 }
 
@@ -1093,11 +1168,9 @@ function updateClockAndMeta() {
   document.getElementById("utcClock").textContent =
     nowServer.toISOString().substring(11,19);
 
-  // Local time
   document.getElementById("localTime").textContent =
     `${I18N[currentLang].localTimeLabel} ${nowLocal.toTimeString().substring(0,8)}`;
 
-  // Sync status
   const syncEl = document.getElementById("syncStatus");
   if (!lastSyncServerTime || lastFetchError) {
     syncEl.classList.remove("sync-ok","sync-warn");
@@ -1115,7 +1188,6 @@ function updateClockAndMeta() {
       I18N[currentLang].syncAgo(diffSec);
   }
 
-  // Phase label + current-phase button highlight
   const phaseEl = document.getElementById("phaseLabel");
   const start = new Date(BATTLE_START_UTC);
   const minSinceStart = (nowServer - start) / 60000;
@@ -1134,17 +1206,16 @@ function updateClockAndMeta() {
 }
 setInterval(updateClockAndMeta, 1000);
 
-/* ========= HELPERS ========= */
+/* Helpers */
 function minutesText(min) {
   return min <= 1 ? Math.round(min*60) + "s" : Math.round(min) + "m";
 }
 
-/* Build 2h window from Pets tab (our whales) */
+/* Build windows from Pets tabs */
 function buildOwnWindow(p) {
   if (!serverRefDate || !p.PetStartUTC) return null;
   const raw = new Date(p.PetStartUTC);
   if (isNaN(raw)) return null;
-
   const h = raw.getUTCHours();
   const m = raw.getUTCMinutes();
   const start = new Date(serverRefDate);
@@ -1152,13 +1223,10 @@ function buildOwnWindow(p) {
   const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
   return { start, end };
 }
-
-/* Build 2h window from EnemyPets tab (enemy whales) */
 function buildEnemyWindow(p) {
   if (!serverRefDate || !p.PetStartUTC) return null;
   const raw = new Date(p.PetStartUTC);
   if (isNaN(raw)) return null;
-
   const h = raw.getUTCHours();
   const m = raw.getUTCMinutes();
   const start = new Date(serverRefDate);
@@ -1167,7 +1235,7 @@ function buildEnemyWindow(p) {
   return { start, end };
 }
 
-/* ========= PET STATUS (OUR) ========= */
+/* Our pet status */
 function petStatus(p) {
   const t = I18N[currentLang];
   const window = buildOwnWindow(p);
@@ -1192,7 +1260,7 @@ function petStatus(p) {
   return { label: t.statusActiveLeft(minutesText(mEnd)), type:"active" };
 }
 
-/* ========= PET STATUS (ENEMY) ========= */
+/* Enemy pet status */
 function enemyPetStatus(p) {
   const t = I18N[currentLang];
   const window = buildEnemyWindow(p);
@@ -1217,31 +1285,28 @@ function enemyPetStatus(p) {
   return { label: t.statusActiveLeft(minutesText(mEnd)), type:"active" };
 }
 
-/* ========= PLAN FILTER BY PHASE & ALLIANCE (recompute order + offsets) ========= */
+/* Filter plan by phase + alliance, compute offsets */
 function filteredPlanForPhaseAlliance(phaseNumber, alliance) {
   const p = Number(phaseNumber) || 1;
   const a = (alliance || "VIP").toUpperCase();
 
-  // 1) Filter by Roles: only whales whose role in that phase matches alliance
   let subset = allPlanRows.filter(r => {
     const name = (r.PlayerName || r.playername || "").trim();
     if (!name) return false;
     const roleInfo = rolesMap[name];
     if (!roleInfo) return false;
     const role = (roleInfo[p] || "").toUpperCase();
-    return role === a;   // VIP or HOE
+    return role === a;
   });
 
   if (!subset.length) return [];
 
-  // 2) Sort by MarchTimeSec: slowest first (so they call first)
   subset = subset.slice().sort((a, b) => {
     const ma = Number(a.MarchTimeSec || 0);
     const mb = Number(b.MarchTimeSec || 0);
-    return mb - ma; // descending
+    return mb - ma;
   });
 
-  // 3) Compute alliance-specific call order and offsets
   const maxMarch = Math.max(
     ...subset.map(r => Number(r.MarchTimeSec || 0))
   );
@@ -1253,13 +1318,13 @@ function filteredPlanForPhaseAlliance(phaseNumber, alliance) {
 
     return {
       ...r,
-      _CallOrder: idx + 1,              // alliance-specific order
-      _OffsetSec: Math.round(offset)    // alliance-specific offset vs slowest
+      _CallOrder: idx + 1,
+      _OffsetSec: Math.round(offset)
     };
   });
 }
 
-/* ========= RENDERERS ========= */
+/* Renderers */
 function renderPets() {
   const tbody = document.getElementById("petsTableBody");
   tbody.innerHTML = "";
@@ -1325,7 +1390,7 @@ function renderRallies() {
   tbody.innerHTML = "";
 
   if (!planRows.length) {
-    tbody.innerHTML = `<tr><td colspan="4">No whales configured for this phase/alliance.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5">No whales configured for this phase/alliance.</td></tr>`;
     return;
   }
 
@@ -1335,6 +1400,7 @@ function renderRallies() {
     const playerName = (invalid ? "⚠️ " : "") + r.PlayerName;
     const order = r._CallOrder || (i + 1);
     const offset = (typeof r._OffsetSec === "number" ? r._OffsetSec : 0);
+    const voiceOffset = offset + 3;
 
     tbody.innerHTML += `
       <tr class="${invalid ? "row-warning" : ""}">
@@ -1342,11 +1408,12 @@ function renderRallies() {
         <td>${playerName}${i===0?'<span class="first-tag">First</span>':''}</td>
         <td>${r.MarchTimeSec}</td>
         <td>${offset}s</td>
+        <td>${voiceOffset}s</td>
       </tr>`;
   });
 }
 
-/* ========= TICKER (OUR PETS) ========= */
+/* Ticker */
 function updateTicker() {
   const t = I18N[currentLang];
   const now = new Date(Date.now() + serverOffsetMs);
@@ -1383,7 +1450,7 @@ function updateTicker() {
   }
 }
 
-/* ========= CHAT MACRO ========= */
+/* Chat macro */
 function generateChatText() {
   const t = I18N[currentLang];
   if (!planRows.length) {
@@ -1403,7 +1470,7 @@ function generateChatText() {
   document.getElementById("shareText").value = lines.join("\n");
 }
 
-/* ========= STATIC TEXT TRANSLATION ========= */
+/* Static translations */
 function applyStaticTranslations() {
   const t = I18N[currentLang];
 
@@ -1429,6 +1496,7 @@ function applyStaticTranslations() {
   document.getElementById("hdrRallyPlayer").textContent = t.tableRallyPlayer;
   document.getElementById("hdrRallyMarch").textContent  = t.tableRallyMarch;
   document.getElementById("hdrRallyOffset").textContent = t.tableRallyOffset;
+  document.getElementById("hdrRallyVoice").textContent  = t.tableRallyVoice;
 
   document.getElementById("hdrPetWhale1").textContent  = t.tablePetWhale;
   document.getElementById("hdrPetWindow1").textContent = t.tablePetWindow;
@@ -1438,7 +1506,7 @@ function applyStaticTranslations() {
   document.getElementById("hdrPetStatus2").textContent = t.tablePetStatus;
 }
 
-/* ========= COPY BUTTON + TOAST ========= */
+/* Copy button */
 document.getElementById("copyBtn").onclick = () => {
   navigator.clipboard.writeText(document.getElementById("shareText").value);
   const toast = document.getElementById("copyToast");
@@ -1448,7 +1516,7 @@ document.getElementById("copyBtn").onclick = () => {
   }, 1400);
 };
 
-/* ========= LANGUAGE TOGGLE ========= */
+/* Language toggle */
 document.getElementById("langToggle").addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-lang]");
   if (!btn) return;
@@ -1464,7 +1532,7 @@ document.getElementById("langToggle").addEventListener("click", (e) => {
   updateTicker();
 });
 
-/* ========= PHASE SELECTOR ========= */
+/* Phase selector */
 function syncPhaseButtons() {
   document.querySelectorAll("#phaseSelector .btn").forEach(b => {
     b.classList.remove("active-phase");
@@ -1472,7 +1540,6 @@ function syncPhaseButtons() {
     if (p === selectedPhase) b.classList.add("active-phase");
   });
 }
-
 document.getElementById("phaseSelector").addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-phase]");
   if (!btn) return;
@@ -1484,7 +1551,7 @@ document.getElementById("phaseSelector").addEventListener("click", (e) => {
   generateChatText();
 });
 
-/* ========= ALLIANCE SELECTOR ========= */
+/* Alliance selector */
 function syncAllianceButtons() {
   document.querySelectorAll("#allianceSelector .btn").forEach(b => {
     b.classList.remove("active-alliance");
@@ -1501,7 +1568,6 @@ function syncAllianceButtons() {
     body.classList.add("mode-vip");
   }
 }
-
 document.getElementById("allianceSelector").addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-ally]");
   if (!btn) return;
@@ -1513,12 +1579,27 @@ document.getElementById("allianceSelector").addEventListener("click", (e) => {
   generateChatText();
 });
 
-/* ========= FORCE REFRESH BUTTON ========= */
+/* Force refresh */
 document.getElementById("refreshBtn").addEventListener("click", () => {
   fetchData();
 });
 
-/* ========= FETCH DATA ========= */
+/* Battle plan modal */
+(function setupModal() {
+  const modal = document.getElementById("battlePlanModal");
+  const btn = document.getElementById("battlePlanBtn");
+  const closeBtn = document.querySelector(".modal-close");
+
+  if (!modal || !btn || !closeBtn) return;
+
+  btn.onclick = () => { modal.style.display = "block"; };
+  closeBtn.onclick = () => { modal.style.display = "none"; };
+  window.addEventListener("click", (event) => {
+    if (event.target === modal) modal.style.display = "none";
+  });
+})();
+
+/* Fetch data */
 async function fetchData() {
   try {
     const res = await fetch(API_URL + "?t=" + Date.now());
@@ -1573,7 +1654,7 @@ async function fetchData() {
   }
 }
 
-/* ========= INIT ========= */
+/* Init */
 applyStaticTranslations();
 setInterval(fetchData, 10000);
 fetchData();
@@ -1582,8 +1663,3 @@ syncAllianceButtons();
 </script>
 </body>
 </html>
-
-
-
-
-
