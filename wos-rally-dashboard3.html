@@ -49,7 +49,8 @@ body {
   background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
   color: var(--text);
   display: flex;
-  justify-content: center;
+  flex-direction: column;   /* 🔵 add this */
+  align-items: center;      /* 🔵 center banner + app */
 }
 
 /* Command center wrapper */
@@ -1582,5 +1583,6 @@ syncAllianceButtons();
 </script>
 </body>
 </html>
+
 
 
